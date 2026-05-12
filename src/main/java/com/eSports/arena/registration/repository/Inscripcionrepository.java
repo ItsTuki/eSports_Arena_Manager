@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> {
+public interface Inscripcionrepository extends JpaRepository<Inscripcion, Long> {
 
     List<Inscripcion> findByTorneoId(Long torneoId);
 
