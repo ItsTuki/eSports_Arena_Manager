@@ -34,7 +34,17 @@
 | `notification-service` | 8091 | `db_notifications` | 3321        |
 
 ---
+## Diagramas del Sistema
 
+### 1. Ecosistema de Microservicios
+Este diagrama representa la topología de la arquitectura distribuida del proyecto. Muestra cómo las peticiones de los clientes ingresan de manera centralizada a través del **API Gateway**, la interacción con el servidor de descubrimiento **Eureka**, y el flujo de comunicación sincrónica entre los servicios core del sistema.
+
+![Diagrama del Ecosistema de Microservicios](https://imgur.com/a/HgFIGOK)
+
+### 2. Modelo Relacional de Base de Datos
+Fiel al principio del diseño de microservicios, cada servicio cuenta con su propia persistencia e independencia de datos (esquemas aislados). Las referencias cruzadas entre entidades de diferentes servicios se acoplan lógicamente mediante código de negocio en la capa Service, garantizando el desacoplamiento físico de las bases de datos.
+
+![Modelo Relacional de Base de Datos](https://imgur.com/a/2v3TfW5)
 ## Grafo de comunicación entre servicios
 
 ```
