@@ -35,9 +35,6 @@
 
 ---
 
-## Grafo de comunicación entre servicios
-
-```
 auth-service ──────────────────────────► user-service
                                               ▲
 game-service ◄──── tournament-service         │
