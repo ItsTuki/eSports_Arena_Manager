@@ -1,8 +1,8 @@
 # eSports Arena Manager – Backend Microservicios
 
-> **Asignatura:** Desarrollo FullStack I (Backend) – DSY1103  
+> **Asignatura:** Desarrollo FullStack I DSY1103  
 > **Institución:** DuocUC  
-> **Arquitectura:** Microservicios con Spring Boot 3.2.5 + Java 17
+> **Arquitectura:** Microservicios con Spring Boot 3.2.5 + Java 21
 
 ---
 
@@ -177,7 +177,7 @@ curl -X POST http://localhost:8084/api/v1/inscripciones \
 
 ---
 
-## Documentación Swagger (Parcial 3)
+## Documentación Swagger
 
 Agregar en cada `pom.xml`:
 ```xml
