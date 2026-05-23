@@ -31,6 +31,10 @@ public class JuegoService {
         return repository.findAll().stream().filter(j -> "ACTIVO".equals(j.getEstado())).toList();
     }
 
+    public List<Juego> listarTodos() {
+        return repository.findAll();
+    }
+
     public Juego buscar(Long id) {
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Juego no encontrado"));
     }

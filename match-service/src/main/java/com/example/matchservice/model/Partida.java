@@ -1,14 +1,30 @@
 package com.example.matchservice.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "partidas")
 public class Partida {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private Long torneoId;
+    @Column(nullable = false)
     private Long participanteAId;
+    @Column(nullable = false)
     private Long participanteBId;
+    @Column(nullable = false)
     private Integer ronda;
+    @Column(nullable = false)
     private LocalDateTime fechaHora;
+    @Column(nullable = false)
     private String estado = "PROGRAMADA";
 
     public Long getId() { return id; }

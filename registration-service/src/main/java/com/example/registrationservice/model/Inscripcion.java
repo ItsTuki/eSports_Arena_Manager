@@ -1,14 +1,28 @@
 package com.example.registrationservice.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "inscripciones")
 public class Inscripcion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private Long torneoId;
     private Long equipoId;
     private Long jugadorId;
+    @Column(nullable = false)
     private String tipoParticipante;
+    @Column(nullable = false)
     private String estado = "ACEPTADA";
+    @Column(nullable = false, updatable = false)
     private LocalDateTime fechaInscripcion = LocalDateTime.now();
 
     public Long getId() { return id; }

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     private final CuentaAccesoService service;
     private final JwtService jwtService;
@@ -33,13 +33,13 @@ public class AuthController {
         return new TokenResponse(jwtService.emitir(cuenta), cuenta.getRol(), cuenta.getEstado());
     }
 
-    @GetMapping("/validate")
+    @PostMapping("/validar-token")
     public Map<String, Boolean> validate(@RequestParam String token) {
         if (!jwtService.validar(token)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalido");
         return Map.of("valid", true);
     }
 
-    @PostMapping("/cuentas")
+    @PostMapping("/registro")
     public ResponseEntity<CuentaAcceso> crear(@Valid @RequestBody CrearCuentaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(request));
     }
@@ -66,6 +66,11 @@ public class AuthController {
 
     @PatchMapping("/cuentas/{id}/desactivar")
     public CuentaAcceso desactivar(@PathVariable Long id) {
+        return service.desactivar(id);
+    }
+
+    @DeleteMapping("/cuentas/{id}/desactivar")
+    public CuentaAcceso desactivarDelete(@PathVariable Long id) {
         return service.desactivar(id);
     }
 }

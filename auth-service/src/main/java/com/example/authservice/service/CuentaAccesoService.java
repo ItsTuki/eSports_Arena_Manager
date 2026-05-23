@@ -3,6 +3,7 @@ package com.example.authservice.service;
 import com.example.authservice.dto.AuthDtos.ActualizarCuentaRequest;
 import com.example.authservice.dto.AuthDtos.CrearCuentaRequest;
 import com.example.authservice.dto.AuthDtos.LoginRequest;
+import com.example.authservice.client.UserClient;
 import com.example.authservice.model.CuentaAcceso;
 import com.example.authservice.repository.CuentaAccesoRepository;
 import org.springframework.http.HttpStatus;
@@ -16,14 +17,17 @@ import java.util.List;
 @Service
 public class CuentaAccesoService {
     private final CuentaAccesoRepository repository;
+    private final UserClient userClient;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public CuentaAccesoService(CuentaAccesoRepository repository) {
+    public CuentaAccesoService(CuentaAccesoRepository repository, UserClient userClient) {
         this.repository = repository;
+        this.userClient = userClient;
     }
 
     public CuentaAcceso crear(CrearCuentaRequest request) {
         validarRol(request.rol());
+        userClient.buscarPorEmail(request.email());
         if (repository.existsByEmail(request.email())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Correo ya registrado");
         CuentaAcceso cuenta = new CuentaAcceso();
         cuenta.setEmail(request.email());
