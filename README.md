@@ -51,13 +51,12 @@ game-service ◄──── tournament-service         │
                ranking-service  prize-service
                                      │
                               notification-service
-```
 
 ---
 
 ## Flujo integrador principal
 
-```
+
 1. Admin registra juego (game-service)
 2. Admin crea torneo asociado al juego (tournament-service)
 3. Jugadores crean equipos (team-service)
@@ -66,7 +65,7 @@ game-service ◄──── tournament-service         │
 6. result-service registra y valida resultados
 7. ranking-service recalcula posiciones
 8. prize-service asigna premios → notification-service notifica
-```
+
 
 ---
 
