@@ -1,109 +1,60 @@
-package com.registrationservice.service;
+package com.example.registrationservice.service;
 
-import com.registrationservice.client.ClientModels.*;
-import com.registrationservice.dto.InscripcionRequestDTO;
-import com.registrationservice.model.*;
-import com.registrationservice.repository.InscripcionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.registrationservice.dto.InscripcionDtos.EstadoRequest;
+import com.example.registrationservice.dto.InscripcionDtos.InscripcionRequest;
+import com.example.registrationservice.model.Inscripcion;
+import com.example.registrationservice.repository.InscripcionRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class InscripcionService {
-
-    private static final Logger log = LoggerFactory.getLogger(InscripcionService.class);
     private final InscripcionRepository repository;
+    public InscripcionService(InscripcionRepository repository) { this.repository = repository; }
 
-    public InscripcionService(InscripcionRepository repository) {
-        this.repository = repository;
-    }
+    public Inscripcion crear(InscripcionRequest request) {
+        boolean abierto = request.torneoAbierto() == null || request.torneoAbierto();
+        LocalDateTime cierre = request.fechaCierreInscripcion() == null ? LocalDateTime.now().plusDays(1) : request.fechaCierreInscripcion();
+        int cupo = request.cupoMaximo() == null ? Integer.MAX_VALUE : request.cupoMaximo();
+        if (!abierto || LocalDateTime.now().isAfter(cierre)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No inscribir fuera de plazo");
+        if (Boolean.TRUE.equals(request.participanteSancionado())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No inscribir participante sancionado");
+        long ocupados = repository.findAll().stream().filter(i -> Objects.equals(i.getTorneoId(), request.torneoId())).filter(i -> !"CANCELADA".equals(i.getEstado())).count();
+        if (ocupados >= cupo) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No superar cupos");
 
-    @Transactional
-    public Inscripcion crearInscripcion(InscripcionRequestDTO dto) {
-        log.info("Iniciando flujo integrador de inscripción para el Torneo ID: {}", dto.getTorneoId());
-
-
-        TournamentMock torneo = new TournamentMock(dto.getTorneoId(), "ABIERTO", 16, LocalDateTime.now().plusDays(2));
-        SanctionMock sancion = new SanctionMock(1L, false); // Falsa simulación: no está sancionado
-
-
-        if (!"ABIERTO".equalsIgnoreCase(torneo.estado()) || LocalDateTime.now().isAfter(torneo.fechaCierreInscripcion())) {
-            log.error("Validación Fallida: Torneo fuera de plazo de inscripción o cerrado.");
-            throw new IllegalStateException("El período de inscripción para este torneo ha finalizado o no está abierto.");
-        }
-
-
-        long cuposOcupados = repository.countByTorneoIdAndEstadoIn(dto.getTorneoId(), List.of(EstadoInscripcion.PROCESANDO, EstadoInscripcion.ACEPTADA));
-        if (cuposOcupados >= torneo.cupoMaximo()) {
-            log.error("Validación Fallida: Cupos agotados para el Torneo ID: {}", dto.getTorneoId());
-            throw new IllegalArgumentException("No quedan cupos disponibles para este torneo.");
-        }
-
-        if (sancion.activaBloqueante()) {
-            log.error("Validación Fallida: El participante posee una sanción activa bloqueante.");
-            throw new SecurityException("Operación denegada: El participante se encuentra sancionado.");
-        }
-
-        Inscripcion inscripcion = new Inscripcion();
-        inscripcion.setTorneoId(dto.getTorneoId());
-        inscripcion.setTipoParticipante(dto.getTipoParticipante());
-
-        // REGLA 4: No duplicar inscripción en el mismo torneo
-        if (dto.getTipoParticipante() == TipoParticipante.INDIVIDUAL) {
-            if (dto.getJugadorId() == null) throw new IllegalArgumentException("El campo jugadorId es obligatorio para la modalidad INDIVIDUAL.");
-
-            if (repository.existsByTorneoIdAndJugadorIdAndEstadoNot(dto.getTorneoId(), dto.getJugadorId(), EstadoInscripcion.RECHAZADA)) {
-                throw new IllegalArgumentException("El jugador ya cuenta con una inscripción activa para este torneo.");
-            }
-            inscripcion.setJugadorId(dto.getJugadorId());
+        Inscripcion i = new Inscripcion();
+        i.setTorneoId(request.torneoId());
+        i.setTipoParticipante(request.tipoParticipante().toUpperCase());
+        if ("INDIVIDUAL".equals(i.getTipoParticipante())) {
+            if (request.jugadorId() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "jugadorId obligatorio");
+            validarDuplicado(request.torneoId(), request.jugadorId(), null);
+            i.setJugadorId(request.jugadorId());
         } else {
-            if (dto.getEquipoId() == null) throw new IllegalArgumentException("El campo equipoId es obligatorio para la modalidad por EQUIPOS.");
-
-            if (repository.existsByTorneoIdAndEquipoIdAndEstadoNot(dto.getTorneoId(), dto.getEquipoId(), EstadoInscripcion.RECHAZADA)) {
-                throw new IllegalArgumentException("El equipo ya se encuentra inscrito en este torneo.");
-            }
-            inscripcion.setEquipoId(dto.getEquipoId());
+            if (request.equipoId() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "equipoId obligatorio");
+            validarDuplicado(request.torneoId(), null, request.equipoId());
+            i.setEquipoId(request.equipoId());
         }
-
-        inscripcion.setEstado(EstadoInscripcion.ACEPTADA);
-        log.info("Inscripción procesada y aceptada exitosamente.");
-        return repository.save(inscripcion);
+        return repository.save(i);
     }
 
-    public List<Inscripcion> listarInscripciones(Long torneoId, Long equipoId, Long jugadorId) {
-        log.info("Buscando inscripciones bajo criterios específicos.");
-        return repository.buscarInscripcionesFiltradas(torneoId, equipoId, jugadorId);
+    public List<Inscripcion> listar(Long torneoId, Long equipoId, Long jugadorId) {
+        return repository.findAll().stream()
+                .filter(i -> torneoId == null || Objects.equals(i.getTorneoId(), torneoId))
+                .filter(i -> equipoId == null || Objects.equals(i.getEquipoId(), equipoId))
+                .filter(i -> jugadorId == null || Objects.equals(i.getJugadorId(), jugadorId))
+                .toList();
     }
 
+    public Inscripcion buscar(Long id) { return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscripcion no encontrada")); }
+    public Inscripcion actualizarEstado(Long id, EstadoRequest request) { Inscripcion i = buscar(id); i.setEstado(request.estado().toUpperCase()); return repository.save(i); }
+    public Inscripcion cancelar(Long id) { Inscripcion i = buscar(id); i.setEstado("CANCELADA"); return repository.save(i); }
 
-    public Optional<Inscripcion> buscarPorId(Long id) {
-        log.info("Consultando inscripción con ID: {}", id);
-        return repository.findById(id);
-    }
-
-
-    @Transactional
-    public Inscripcion actualizarEstado(Long id, EstadoInscripcion nuevoEstado) {
-        log.info("Cambiando estado de inscripción ID: {} a {}", id, nuevoEstado);
-        Inscripcion inscripcion = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada."));
-
-        inscripcion.setEstado(nuevoEstado);
-        return repository.save(inscripcion);
-    }
-
-    @Transactional
-    public void cancelarInscripcion(Long id) {
-        log.warn("Solicitud de cancelación para la inscripción ID: {}", id);
-        Inscripcion inscripcion = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada."));
-
-        inscripcion.setEstado(EstadoInscripcion.CANCELADA);
-        repository.save(inscripcion);
+    private void validarDuplicado(Long torneoId, Long jugadorId, Long equipoId) {
+        boolean existe = repository.findAll().stream().filter(i -> !"CANCELADA".equals(i.getEstado()))
+                .anyMatch(i -> Objects.equals(i.getTorneoId(), torneoId) && (jugadorId != null && Objects.equals(i.getJugadorId(), jugadorId) || equipoId != null && Objects.equals(i.getEquipoId(), equipoId)));
+        if (existe) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No duplicar inscripcion en el mismo torneo");
     }
 }

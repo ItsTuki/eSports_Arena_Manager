@@ -1,91 +1,51 @@
-package com.gameservice.service;
+package com.example.gameservice.service;
 
-import com.gameservice.dto.JuegoRequestDTO;
-import com.gameservice.model.Juego;
-import com.gameservice.model.EstadoJuego;
-import com.gameservice.model.Modalidad;
-import com.gameservice.repository.JuegoRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.gameservice.dto.JuegoDtos.JuegoRequest;
+import com.example.gameservice.dto.JuegoDtos.JuegoUpdate;
+import com.example.gameservice.model.Juego;
+import com.example.gameservice.repository.JuegoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class JuegoService {
-
-    private static final Logger log = LoggerFactory.getLogger(JuegoService.class);
     private final JuegoRepository repository;
 
-    public JuegoService(JuegoRepository repository) {
-        this.repository = repository;
-    }
+    public JuegoService(JuegoRepository repository) { this.repository = repository; }
 
-    @Transactional
-    public Juego crearJuego(JuegoRequestDTO dto) {
-        log.info("Intentando registrar un nuevo juego con nombre: {}", dto.getNombre());
-
-        if (repository.existsByNombreIgnoreCase(dto.getNombre())) {
-            log.error("Validación fallida: El juego '{}' ya se encuentra registrado.", dto.getNombre());
-            throw new IllegalArgumentException("El nombre del videojuego ya está registrado.");
-        }
-
+    public Juego crear(JuegoRequest request) {
+        repository.findByNombre(request.nombre()).ifPresent(j -> { throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de juego ya registrado"); });
         Juego juego = new Juego();
-        juego.setNombre(dto.getNombre());
-        juego.setGenero(dto.getGenero());
-        juego.setModalidad(dto.getModalidad());
-        juego.setJugadoresPorEquipo(dto.getJugadoresPorEquipo());
-        juego.setReglasGenerales(dto.getReglasGenerales());
-
-        Juego guardado = repository.save(juego);
-        log.info("Juego registrado exitosamente con ID: {}", guardado.getId());
-        return guardado;
-    }
-
-    // 2. Listar juegos activos
-    public List<Juego> listarJuegosActivos() {
-        log.info("Consultando lista de videojuegos activos en el sistema.");
-        return repository.findByEstado(EstadoJuego.ACTIVO);
-    }
-
-    // 3. Buscar juego por ID
-    public Optional<Juego> buscarPorId(Long id) {
-        log.info("Buscando videojuego por ID: {}", id);
-        return repository.findById(id);
-    }
-
-
-    @Transactional
-    public Juego actualizarJuego(Long id, Modalidad nuevaModalidad, String nuevasReglas) {
-        log.info("Procesando actualización para el juego con ID: {}", id);
-
-        Juego juego = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("El videojuego con el ID provisto no existe."));
-
-        if (nuevaModalidad != null) {
-            log.info("Cambiando modalidad de {} a {}", juego.getModalidad(), nuevaModalidad);
-            juego.setModalidad(nuevaModalidad);
-        }
-        if (nuevasReglas != null) {
-            log.info("Actualizando las reglas generales del juego.");
-            juego.setReglasGenerales(nuevasReglas);
-        }
-
+        juego.setNombre(request.nombre());
+        juego.setGenero(request.genero());
+        juego.setModalidad(request.modalidad().toUpperCase());
+        juego.setJugadoresPorEquipo(request.jugadoresPorEquipo());
+        juego.setReglasGenerales(request.reglasGenerales());
         return repository.save(juego);
     }
 
+    public List<Juego> activos() {
+        return repository.findAll().stream().filter(j -> "ACTIVO".equals(j.getEstado())).toList();
+    }
 
-    @Transactional
-    public void desactivarJuego(Long id) {
-        log.warn("Solicitud de desactivación para el juego con ID: {}", id);
+    public Juego buscar(Long id) {
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Juego no encontrado"));
+    }
 
-        Juego juego = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("El videojuego con el ID provisto no existe."));
+    public Juego actualizar(Long id, JuegoUpdate request) {
+        Juego juego = buscar(id);
+        if (request.modalidad() != null) juego.setModalidad(request.modalidad().toUpperCase());
+        if (request.reglasGenerales() != null) juego.setReglasGenerales(request.reglasGenerales());
+        if (request.estado() != null) juego.setEstado(request.estado().toUpperCase());
+        return repository.save(juego);
+    }
 
-        juego.setEstado(EstadoJuego.INACTIVO);
-        repository.save(juego);
-        log.info("El juego '{}' ha sido marcado como INACTIVO de forma correcta.", juego.getNombre());
+    public Juego desactivar(Long id) {
+        Juego juego = buscar(id);
+        juego.setEstado("INACTIVO");
+        return repository.save(juego);
     }
 }

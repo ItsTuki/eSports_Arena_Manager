@@ -1,29 +1,24 @@
-package com.registrationservice.repository;
+package com.example.registrationservice.repository;
 
-import com.registrationservice.model.Inscripcion;
-import com.registrationservice.model.EstadoInscripcion;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.example.registrationservice.model.Inscripcion;
 import org.springframework.stereotype.Repository;
-
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+public interface InscripcionRepository {
+    Inscripcion save(Inscripcion inscripcion);
+    List<Inscripcion> findAll();
+    Optional<Inscripcion> findById(Long id);
+}
 
 @Repository
-public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> {
-
-
-    boolean existsByTorneoIdAndJugadorIdAndEstadoNot(Long torneoId, Long jugadorId, EstadoInscripcion estado);
-    boolean existsByTorneoIdAndEquipoIdAndEstadoNot(Long torneoId, Long equipoId, EstadoInscripcion estado);
-
-    long countByTorneoIdAndEstadoIn(Long torneoId, List<EstadoInscripcion> estados);
-
-    @Query("SELECT i FROM Inscripcion i WHERE " +
-            "(:torneoId IS NULL OR i.torneoId = :torneoId) AND " +
-            "(:equipoId IS NULL OR i.equipoId = :equipoId) AND " +
-            "(:jugadorId IS NULL OR i.jugadorId = :jugadorId)")
-    List<Inscripcion> buscarInscripcionesFiltradas(
-            @Param("torneoId") Long torneoId,
-            @Param("equipoId") Long equipoId,
-            @Param("jugadorId") Long jugadorId);
+class InMemoryInscripcionRepository implements InscripcionRepository {
+    private final ConcurrentHashMap<Long, Inscripcion> data = new ConcurrentHashMap<>();
+    private final AtomicLong ids = new AtomicLong(1);
+    public Inscripcion save(Inscripcion i) { if (i.getId() == null) i.setId(ids.getAndIncrement()); data.put(i.getId(), i); return i; }
+    public List<Inscripcion> findAll() { return data.values().stream().sorted(Comparator.comparing(Inscripcion::getId)).toList(); }
+    public Optional<Inscripcion> findById(Long id) { return Optional.ofNullable(data.get(id)); }
 }
