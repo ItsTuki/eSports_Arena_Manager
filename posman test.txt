@@ -1,0 +1,265 @@
+1. Crear Usuario Admin
+
+POST http://localhost:8081/api/v1/usuarios
+
+{
+  "nombre": "Admin Uno",
+  "nickname": "admin1",
+  "email": "admin@example.com",
+  "rol": "ADMINISTRADOR"
+}
+2. Crear Cuenta Auth
+
+POST http://localhost:8080/api/v1/auth/registro
+
+{
+  "email": "admin@example.com",
+  "password": "Admin1234",
+  "rol": "ADMINISTRADOR"
+}
+3. Login
+
+POST http://localhost:8080/api/v1/auth/login
+
+{
+  "email": "admin@example.com",
+  "password": "Admin1234"
+}
+4. Crear Jugador
+
+POST http://localhost:8081/api/v1/usuarios
+
+{
+  "nombre": "Jugador Uno",
+  "nickname": "player1",
+  "email": "player1@example.com",
+  "rol": "JUGADOR"
+}
+5. Crear Segundo Jugador
+
+POST http://localhost:8081/api/v1/usuarios
+
+{
+  "nombre": "Jugador Dos",
+  "nickname": "player2",
+  "email": "player2@example.com",
+  "rol": "JUGADOR"
+}
+6. Crear Juego
+
+POST http://localhost:8087/api/v1/juegos
+
+{
+  "nombre": "Valorant",
+  "genero": "FPS",
+  "modalidad": "EQUIPO",
+  "jugadoresPorEquipo": 5,
+  "reglasGenerales": "Formato BO3"
+}
+7. Crear Torneo
+
+POST http://localhost:8083/api/v1/torneos
+
+{
+  "nombre": "Copa Verano 2026",
+  "juegoId": 1,
+  "fechaInicio": "2026-06-01T10:00:00",
+  "fechaFin": "2026-06-30T20:00:00",
+  "fechaCierreInscripcion": "2026-05-28T23:59:00",
+  "cupoMaximo": 16,
+  "modalidad": "EQUIPO",
+  "estado": "ABIERTO"
+}
+8. Crear Equipo 1
+
+POST http://localhost:8082/api/v1/equipos
+
+{
+  "nombre": "Team Alpha",
+  "capitanId": 2,
+  "juegoPrincipalId": 1,
+  "integrantes": [
+    {
+      "usuarioId": 2,
+      "rolDentroEquipo": "CAPITAN"
+    }
+  ]
+}
+9. Crear Equipo 2
+
+POST http://localhost:8082/api/v1/equipos
+
+{
+  "nombre": "Team Beta",
+  "capitanId": 3,
+  "juegoPrincipalId": 1,
+  "integrantes": [
+    {
+      "usuarioId": 3,
+      "rolDentroEquipo": "CAPITAN"
+    }
+  ]
+}
+10. Inscribir Equipo 1
+
+POST http://localhost:8084/api/v1/inscripciones
+
+{
+  "torneoId": 1,
+  "equipoId": 1,
+  "tipoParticipante": "EQUIPO"
+}
+11. Inscribir Equipo 2
+
+POST http://localhost:8084/api/v1/inscripciones
+
+{
+  "torneoId": 1,
+  "equipoId": 2,
+  "tipoParticipante": "EQUIPO"
+}
+12. Crear Partida
+
+POST http://localhost:8086/api/v1/partidas
+
+{
+  "torneoId": 1,
+  "participanteAId": 1,
+  "participanteBId": 2,
+  "ronda": 1,
+  "fechaHora": "2026-06-02T18:00:00"
+}
+13. Crear Resultado
+
+POST http://localhost:8088/api/v1/resultados
+
+{
+  "partidaId": 1,
+  "ganadorId": 1,
+  "puntajeA": 13,
+  "puntajeB": 8,
+  "evidencia": "https://evidencia.demo/partida-1"
+}
+14. Validar Resultado
+
+PUT http://localhost:8088/api/v1/resultados/1
+
+{
+  "estadoValidacion": "VALIDADO",
+  "rolOrganizador": true
+}
+15. Crear Ranking Equipo 1
+
+POST http://localhost:8089/api/v1/rankings
+
+{
+  "torneoId": 1,
+  "participanteId": 1
+}
+16. Crear Ranking Equipo 2
+
+POST http://localhost:8089/api/v1/rankings
+
+{
+  "torneoId": 1,
+  "participanteId": 2
+}
+17. Actualizar Ranking Equipo 1
+
+PUT http://localhost:8089/api/v1/rankings/1
+
+{
+  "puntos": 3,
+  "victorias": 1,
+  "derrotas": 0,
+  "diferencia": 5,
+  "resultadoValidado": true
+}
+18. Actualizar Ranking Equipo 2
+
+PUT http://localhost:8089/api/v1/rankings/2
+
+{
+  "puntos": 0,
+  "victorias": 0,
+  "derrotas": 1,
+  "diferencia": -5,
+  "resultadoValidado": true
+}
+19. Cerrar Ranking
+
+PATCH http://localhost:8089/api/v1/rankings/torneos/1/cerrar
+
+Sin body.
+
+20. Finalizar Torneo
+
+PATCH http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=FINALIZADO
+
+Sin body.
+
+21. Crear Premio
+
+POST http://localhost:8090/api/v1/premios
+
+{
+  "torneoId": 1,
+  "posicion": 1,
+  "descripcion": "Medalla oro + premio simbólico",
+  "valor": 100000
+}
+22. Asignar Premio
+
+POST http://localhost:8090/api/v1/premios/1/asignaciones
+
+{
+  "participanteId": 1
+}
+23. Crear Notificación
+
+POST http://localhost:8091/api/v1/notificaciones
+
+{
+  "usuarioId": 2,
+  "tipo": "PREMIO",
+  "mensaje": "Tu equipo obtuvo el primer lugar en Copa Verano 2026"
+}
+24. Marcar Notificación Como Leída
+
+PATCH http://localhost:8091/api/v1/notificaciones/1/leer
+
+Sin body.
+
+Consultas útiles
+
+Listar juegos:
+
+GET http://localhost:8087/api/v1/juegos
+
+Listar todos los juegos:
+
+GET http://localhost:8087/api/v1/juegos?todos=true
+
+Listar torneos:
+
+GET http://localhost:8083/api/v1/torneos
+
+Listar inscripciones por torneo:
+
+GET http://localhost:8084/api/v1/inscripciones/torneo/1
+
+Listar partidas:
+
+GET http://localhost:8086/api/v1/partidas?torneoId=1
+
+Listar ranking:
+
+GET http://localhost:8089/api/v1/rankings?torneoId=1
+
+Listar premios:
+
+GET http://localhost:8090/api/v1/premios?torneoId=1
+
+Listar notificaciones:
+
+GET http://localhost:8091/api/v1/notificaciones?usuarioId=2
