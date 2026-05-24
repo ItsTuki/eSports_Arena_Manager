@@ -33,9 +33,8 @@ public class EquipoService {
         equipo.setNombre(request.nombre());
         equipo.setCapitanId(request.capitanId());
         equipo.setJuegoPrincipalId(request.juegoPrincipalId());
-        Equipo saved = repository.save(equipo);
-        saved.setIntegrantes(construirIntegrantes(saved, request.integrantes()));
-        return repository.save(saved);
+        equipo.getIntegrantes().addAll(construirIntegrantes(equipo, request.integrantes()));
+        return repository.save(equipo);
     }
 
     public List<Equipo> listar(Long juegoId, Long capitanId, String estado) {

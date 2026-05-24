@@ -40,5 +40,8 @@ public class Equipo {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
     public List<MiembroEquipo> getIntegrantes() { return integrantes; }
-    public void setIntegrantes(List<MiembroEquipo> integrantes) { this.integrantes = integrantes; }
+    public void setIntegrantes(List<MiembroEquipo> integrantes) {
+        this.integrantes.clear();
+        if (integrantes != null) this.integrantes.addAll(integrantes);
+    }
 }
