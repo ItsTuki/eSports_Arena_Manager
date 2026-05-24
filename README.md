@@ -71,7 +71,21 @@ game-service ◄──── tournament-service         │
 
 ## Instrucciones de ejecución
 
-#
+1. Crear o levantar las bases MySQL indicadas en la tabla de puertos.
+2. Configurar credenciales si no se usa `root` sin clave:
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+3. Ejecutar cada microservicio desde su carpeta:
+
+```bash
+mvn spring-boot:run
+```
+
+4. Probar los flujos principales con la colección:
+
+```text
+postman/eSports_Arena_Manager_Parcial2.postman_collection.json
+```
 
 ---
 
@@ -192,7 +206,7 @@ Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
 
 - [x] Repositorio GitHub organizado por microservicios
 - [x] `README.md` con puertos y endpoints
-- [ ] Colección Postman exportada 
+- [x] Colección Postman exportada 
 - [ ] Diagrama de ecosistema 
 - [ ] Tablero Trello con tareas distribuidas
 - [ ] Swagger/OpenAPI 
