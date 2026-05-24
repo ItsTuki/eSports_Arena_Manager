@@ -20,18 +20,18 @@
 
 | Servicio             | Puerto | Base de datos      | MySQL puerto |
 |----------------------|--------|--------------------|-------------|
-| `auth-service`       | 8080   | `db_auth`          | 3310        |
-| `user-service`       | 8081   | `db_users`         | 3311        |
-| `team-service`       | 8082   | `db_teams`         | 3312        |
-| `tournament-service` | 8083   | `db_tournaments`   | 3314        |
-| `registration-service` | 8084 | `db_registration`  | 3315        |
-| `sanction-service`   | 8085   | `db_sanctions`     | 3317        |
-| `match-service`      | 8086   | `db_matches`       | 3316        |
-| `game-service`       | 8087   | `db_games`         | 3313        |
-| `result-service`     | 8088   | `db_results`       | 3318        |
-| `ranking-service`    | 8089   | `db_rankings`      | 3319        |
-| `prize-service`      | 8090   | `db_prizes`        | 3320        |
-| `notification-service` | 8091 | `db_notifications` | 3321        |
+| `auth-service`       | 8080   | `db_auth`          | 3306        |
+| `user-service`       | 8081   | `db_users`         | 3306        |
+| `team-service`       | 8082   | `db_teams`         | 3306        |
+| `tournament-service` | 8083   | `db_tournaments`   | 3306        |
+| `registration-service` | 8084 | `db_registration`  | 3306        |
+| `sanction-service`   | 8085   | `db_sanctions`     | 3306        |
+| `match-service`      | 8086   | `db_matches`       | 3306        |
+| `game-service`       | 8087   | `db_games`         | 3306        |
+| `result-service`     | 8088   | `db_results`       | 3306        |
+| `ranking-service`    | 8089   | `db_rankings`      | 3306        |
+| `prize-service`      | 8090   | `db_prizes`        | 3306        |
+| `notification-service` | 8091 | `db_notifications` | 3306        |
 
 ---
 
@@ -71,21 +71,74 @@ game-service ◄──── tournament-service         │
 
 ## Instrucciones de ejecución
 
-1. Crear o levantar las bases MySQL indicadas en la tabla de puertos.
-2. Configurar credenciales si no se usa `root` sin clave:
-   - `DB_USERNAME`
-   - `DB_PASSWORD`
+### Requisito de base de datos local
+
+Para probar el proyecto localmente se usa **XAMPP** con el servicio **MySQL/MariaDB** activo.
+
+Configuración esperada por defecto:
+
+```text
+Host: localhost
+Puerto MySQL: 3306
+Usuario: root
+Contraseña: vacía
+```
+
+Cada microservicio mantiene su propia base de datos independiente, pero todas usan el mismo servidor MySQL de XAMPP en el puerto `3306`.
+
+Las bases son:
+
+```text
+db_auth
+db_users
+db_teams
+db_games
+db_tournaments
+db_registration
+db_sanctions
+db_matches
+db_results
+db_rankings
+db_prizes
+db_notifications
+```
+
+Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos. Si XAMPP tiene contraseña configurada, definir:
+
+```text
+DB_USERNAME=root
+DB_PASSWORD=tu_clave
+```
+
+### Ejecución de microservicios
+
+1. Abrir XAMPP.
+2. Iniciar el servicio **MySQL**.
 3. Ejecutar cada microservicio desde su carpeta:
 
 ```bash
 mvn spring-boot:run
 ```
 
-4. Probar los flujos principales con la colección:
+4. Orden recomendado de ejecución:
 
 ```text
-postman/eSports_Arena_Manager_Parcial2.postman_collection.json
+user-service
+auth-service
+game-service
+tournament-service
+team-service
+sanction-service
+registration-service
+match-service
+result-service
+ranking-service
+prize-service
+notification-service
 ```
+
+5. Probar los flujos principales con la colección
+
 
 ---
 
@@ -207,7 +260,7 @@ Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
 - [x] Repositorio GitHub organizado por microservicios
 - [x] `README.md` con puertos y endpoints
 - [x] Colección Postman exportada 
-- [ ] Diagrama de ecosistema 
+- [x] Diagrama de ecosistema 
 - [ ] Tablero Trello con tareas distribuidas
 - [ ] Swagger/OpenAPI 
 - [ ] API Gateway configurado 
