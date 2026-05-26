@@ -1,21 +1,8 @@
-POSTMAN TEST - eSports Arena Manager
+- eSports Arena Manager
 Orden recomendado para probar el flujo completo
 
 Notas:
 - Antes de probar, iniciar XAMPP y levantar MySQL.
-- Ejecutar los microservicios en este orden:
-  1. user-service
-  2. auth-service
-  3. game-service
-  4. tournament-service
-  5. team-service
-  6. sanction-service
-  7. registration-service
-  8. match-service
-  9. result-service
-  10. ranking-service
-  11. prize-service
-  12. notification-service
 - Los IDs usados abajo asumen una base limpia.
 - Si ya probaste antes, limpia las tablas o ajusta los IDs segun lo creado.
 
