@@ -1,10 +1,8 @@
-# eSports Arena Manager – Backend Microservicios
+# eSports Arena Manager
 
-> **Asignatura:** Desarrollo FullStack I DSY1103  
-> **Institución:** DuocUC  
-> **Arquitectura:** Microservicios con Spring Boot 3.2.5 + Java 21
-
----
+Asignatura: Desarrollo FullStack I DSY1103  
+Institución:DuocUC  
+Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
 
 ## Integrantes del equipo
 
@@ -33,41 +31,6 @@
 | `prize-service`      | 8090   | `db_prizes`        | 3306        |
 | `notification-service` | 8091 | `db_notifications` | 3306        |
 
----
-
-auth-service ──────────────────────────► user-service
-                                              ▲
-game-service ◄──── tournament-service         │
-     ▲                    ▲              team-service
-     │                    │                  ▲
-     └────── team-service  │                 │
-                           │         registration-service
-                    match-service ──────────►│
-                           │         sanction-service
-                           ▼
-                    result-service
-                     │        │
-                     ▼        ▼
-               ranking-service  prize-service
-                                     │
-                              notification-service
-
----
-
-## Flujo integrador principal
-
-
-1. Admin registra juego (game-service)
-2. Admin crea torneo asociado al juego (tournament-service)
-3. Jugadores crean equipos (team-service)
-4. registration-service valida cupo + sanciones + estado torneo → inscribe
-5. match-service genera partidas entre inscritos
-6. result-service registra y valida resultados
-7. ranking-service recalcula posiciones
-8. prize-service asigna premios → notification-service notifica
-
-
----
 
 ## Instrucciones de ejecución
 
@@ -103,12 +66,7 @@ db_prizes
 db_notifications
 ```
 
-Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos. Si XAMPP tiene contraseña configurada, definir:
-
-```text
-DB_USERNAME=root
-DB_PASSWORD=tu_clave
-```
+Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos.
 
 ### Ejecución de microservicios
 
@@ -137,10 +95,9 @@ prize-service
 notification-service
 ```
 
-5. Probar los flujos principales con la colección
+5. Probar los flujos principales con la colección de postman(collecion de postman.txt)
 
 
----
 
 ## Endpoints principales por microservicio
 
@@ -206,55 +163,6 @@ notification-service
 
 ---
 
-## Ejemplo de flujo completo con curl
-
-```bash
-# 1. Crear juego
-curl -X POST http://localhost:8087/api/v1/juegos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Valorant","genero":"FPS","modalidad":"EQUIPO","jugadoresPorEquipo":5}'
-
-# 2. Crear torneo
-curl -X POST http://localhost:8083/api/v1/torneos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Copa Verano 2026","juegoId":1,"fechaInicio":"2026-06-01",
-       "fechaFin":"2026-06-30","fechaFinInscripcion":"2026-05-28",
-       "cupoMaximo":16,"modalidad":"ELIMINACION_DIRECTA"}'
-
-# 3. Abrir torneo
-curl -X PATCH "http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=ABIERTO"
-
-# 4. Crear equipo
-curl -X POST http://localhost:8082/api/v1/equipos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Team Alpha","capitanId":1,"juegoPrincipalId":1}'
-
-# 5. Inscribir equipo
-curl -X POST http://localhost:8084/api/v1/inscripciones \
-  -H "Content-Type: application/json" \
-  -d '{"torneoId":1,"equipoId":1,"tipoParticipante":"EQUIPO"}'
-```
-
----
-
-
----
-
-## Documentación Swagger
-
-Agregar en cada `pom.xml`:
-```xml
-<dependency>
-    <groupId>org.springdoc</groupId>
-    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    <version>2.3.0</version>
-</dependency>
-```
-
-Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
-
----
-
 ## Evidencias requeridas
 
 - [x] Repositorio GitHub organizado por microservicios
@@ -262,6 +170,4 @@ Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
 - [x] Colección Postman exportada 
 - [x] Diagrama de ecosistema 
 - [ ] Tablero Trello con tareas distribuidas
-- [ ] Swagger/OpenAPI 
-- [ ] API Gateway configurado 
 
