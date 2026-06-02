@@ -4,6 +4,7 @@ import com.example.rankingservice.dto.RankingDtos.RankingRequest;
 import com.example.rankingservice.dto.RankingDtos.RankingUpdate;
 import com.example.rankingservice.model.Ranking;
 import com.example.rankingservice.service.RankingService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/rankings")
+@Tag(name = "Rankings", description = "Tabla de posiciones, puntos y estadisticas")
 public class RankingController {
     private final RankingService service;
     public RankingController(RankingService service) { this.service = service; }

@@ -4,6 +4,7 @@ import com.example.registrationservice.dto.InscripcionDtos.EstadoRequest;
 import com.example.registrationservice.dto.InscripcionDtos.InscripcionRequest;
 import com.example.registrationservice.model.Inscripcion;
 import com.example.registrationservice.service.InscripcionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/inscripciones")
+@Tag(name = "Inscripciones", description = "Inscripciones de jugadores o equipos a torneos")
 public class InscripcionController {
     private final InscripcionService service;
     public InscripcionController(InscripcionService service) { this.service = service; }

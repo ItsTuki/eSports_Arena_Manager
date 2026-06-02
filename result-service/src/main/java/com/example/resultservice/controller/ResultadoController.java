@@ -5,6 +5,7 @@ import com.example.resultservice.dto.ResultadoDtos.ResultadoRequest;
 import com.example.resultservice.dto.ResultadoDtos.ResultadoUpdate;
 import com.example.resultservice.model.Resultado;
 import com.example.resultservice.service.ResultadoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/resultados")
+@Tag(name = "Resultados", description = "Resultados de partidas, puntajes y validacion")
 public class ResultadoController {
     private final ResultadoService service;
     public ResultadoController(ResultadoService service) { this.service = service; }

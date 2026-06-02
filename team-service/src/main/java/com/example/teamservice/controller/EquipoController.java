@@ -5,6 +5,7 @@ import com.example.teamservice.dto.EquipoDtos.EquipoUpdate;
 import com.example.teamservice.dto.EquipoDtos.MiembroRequest;
 import com.example.teamservice.model.Equipo;
 import com.example.teamservice.service.EquipoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/equipos")
+@Tag(name = "Equipos", description = "Equipos, integrantes, capitan y validacion de inscripcion")
 public class EquipoController {
     private final EquipoService service;
     public EquipoController(EquipoService service) { this.service = service; }

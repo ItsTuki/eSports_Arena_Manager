@@ -4,6 +4,7 @@ import com.example.tournamentservice.dto.TorneoDtos.TorneoRequest;
 import com.example.tournamentservice.dto.TorneoDtos.TorneoUpdate;
 import com.example.tournamentservice.model.Torneo;
 import com.example.tournamentservice.service.TorneoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/torneos")
+@Tag(name = "Torneos", description = "Torneos, fechas, cupos, modalidad y estado")
 public class TorneoController {
     private final TorneoService service;
     public TorneoController(TorneoService service) { this.service = service; }

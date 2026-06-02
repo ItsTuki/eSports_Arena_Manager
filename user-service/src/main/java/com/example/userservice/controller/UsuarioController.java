@@ -4,6 +4,7 @@ import com.example.userservice.dto.UsuarioDtos.UsuarioRequest;
 import com.example.userservice.dto.UsuarioDtos.UsuarioUpdate;
 import com.example.userservice.model.Usuario;
 import com.example.userservice.service.UsuarioService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/usuarios")
+@Tag(name = "Usuarios", description = "Perfiles, roles, nickname y estado competitivo")
 public class UsuarioController {
     private final UsuarioService service;
 

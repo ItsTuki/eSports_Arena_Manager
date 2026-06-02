@@ -4,6 +4,7 @@ import com.example.matchservice.dto.PartidaDtos.PartidaRequest;
 import com.example.matchservice.dto.PartidaDtos.PartidaUpdate;
 import com.example.matchservice.model.Partida;
 import com.example.matchservice.service.PartidaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/partidas")
+@Tag(name = "Partidas", description = "Partidas, rondas, horarios y participantes")
 public class PartidaController {
     private final PartidaService service;
     public PartidaController(PartidaService service) { this.service = service; }

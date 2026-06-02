@@ -4,6 +4,7 @@ import com.example.sanctionservice.dto.SancionDtos.SancionRequest;
 import com.example.sanctionservice.dto.SancionDtos.SancionUpdate;
 import com.example.sanctionservice.model.Sancion;
 import com.example.sanctionservice.service.SancionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/sanciones")
+@Tag(name = "Sanciones", description = "Sanciones activas, bloqueos y cierre de sanciones")
 public class SancionController {
     private final SancionService service;
     public SancionController(SancionService service) { this.service = service; }

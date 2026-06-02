@@ -6,6 +6,7 @@ import com.example.prizeservice.dto.PremioDtos.PremioUpdate;
 import com.example.prizeservice.model.Premio;
 import com.example.prizeservice.model.PremioAsignado;
 import com.example.prizeservice.service.PremioService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/premios")
+@Tag(name = "Premios", description = "Premios por torneo, posicion y asignaciones")
 public class PremioController {
     private final PremioService service;
     public PremioController(PremioService service) { this.service = service; }

@@ -32,6 +32,27 @@ Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
 | `notification-service` | 8091 | `db_notifications` | 3306        |
 
 
+## Documentación Swagger / OpenAPI
+
+Cada microservicio expone su documentación Swagger UI en la ruta `/doc/swagger-ui/index.html`.
+
+| Servicio             | Swagger UI |
+|----------------------|------------|
+| `auth-service`       | `http://localhost:8080/doc/swagger-ui/index.html` |
+| `user-service`       | `http://localhost:8081/doc/swagger-ui/index.html` |
+| `team-service`       | `http://localhost:8082/doc/swagger-ui/index.html` |
+| `tournament-service` | `http://localhost:8083/doc/swagger-ui/index.html` |
+| `registration-service` | `http://localhost:8084/doc/swagger-ui/index.html` |
+| `sanction-service`   | `http://localhost:8085/doc/swagger-ui/index.html` |
+| `match-service`      | `http://localhost:8086/doc/swagger-ui/index.html` |
+| `game-service`       | `http://localhost:8087/doc/swagger-ui/index.html` |
+| `result-service`     | `http://localhost:8088/doc/swagger-ui/index.html` |
+| `ranking-service`    | `http://localhost:8089/doc/swagger-ui/index.html` |
+| `prize-service`      | `http://localhost:8090/doc/swagger-ui/index.html` |
+| `notification-service` | `http://localhost:8091/doc/swagger-ui/index.html` |
+
+También queda disponible el JSON OpenAPI en `/v3/api-docs` dentro de cada microservicio.
+
 ## Instrucciones de ejecución
 
 ### Requisito de base de datos local

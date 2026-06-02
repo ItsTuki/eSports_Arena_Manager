@@ -4,6 +4,7 @@ import com.example.notificationservice.dto.NotificacionDtos.NotificacionRequest;
 import com.example.notificationservice.dto.NotificacionDtos.NotificacionUpdate;
 import com.example.notificationservice.model.Notificacion;
 import com.example.notificationservice.service.NotificacionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/notificaciones")
+@Tag(name = "Notificaciones", description = "Notificaciones internas e historial")
 public class NotificacionController {
     private final NotificacionService service;
     public NotificacionController(NotificacionService service) { this.service = service; }
