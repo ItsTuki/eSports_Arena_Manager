@@ -20,7 +20,7 @@ public class NotificacionController {
     @PostMapping public ResponseEntity<Notificacion> crear(@Valid @RequestBody NotificacionRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(request)); }
     @GetMapping public List<Notificacion> listar(@RequestParam(required = false) Long usuarioId, @RequestParam(required = false) Long equipoId) { return service.listar(usuarioId, equipoId); }
     @GetMapping("/{id}") public Notificacion buscar(@PathVariable Long id) { return service.buscar(id); }
-    @PutMapping("/{id}") public Notificacion actualizar(@PathVariable Long id, @RequestBody NotificacionUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Notificacion actualizar(@PathVariable Long id, @Valid @RequestBody NotificacionUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/leer") public Notificacion leer(@PathVariable Long id) { return service.leer(id); }
     @PatchMapping("/{id}/archivar") public Notificacion archivar(@PathVariable Long id) { return service.archivar(id); }
 }

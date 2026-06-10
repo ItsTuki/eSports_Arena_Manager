@@ -57,12 +57,13 @@ public class EquipoService {
             equipo.getIntegrantes().clear();
             equipo.getIntegrantes().addAll(construirIntegrantes(equipo, request.integrantes()));
         }
-        if (request.estado() != null) equipo.setEstado(request.estado().toUpperCase());
+        if (request.estado() != null) cambiarEstadoEquipo(equipo, request.estado());
         return repository.save(equipo);
     }
 
     public Equipo agregarMiembro(Long id, MiembroRequest request) {
         Equipo equipo = buscar(id);
+        if (!"ACTIVO".equals(equipo.getEstado())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Equipo inactivo no permite agregar miembros");
         boolean duplicado = equipo.getIntegrantes().stream().anyMatch(m -> Objects.equals(m.getUsuarioId(), request.usuarioId()));
         if (duplicado) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jugador duplicado dentro del equipo");
         equipo.getIntegrantes().add(miembro(equipo, request.usuarioId(), request.rolDentroEquipo()));
@@ -71,13 +72,13 @@ public class EquipoService {
 
     public Equipo desactivar(Long id) {
         Equipo equipo = buscar(id);
-        equipo.setEstado("INACTIVO");
+        cambiarEstadoEquipo(equipo, "INACTIVO");
         return repository.save(equipo);
     }
 
     public boolean puedeInscribirse(Long id) {
         Equipo equipo = buscar(id);
-        return "ACTIVO".equals(equipo.getEstado()) && !equipo.getIntegrantes().isEmpty();
+        return "ACTIVO".equals(equipo.getEstado()) && equipo.getIntegrantes().stream().anyMatch(this::miembroActivo);
     }
 
     private List<MiembroEquipo> construirIntegrantes(Equipo equipo, List<MiembroRequest> requests) {
@@ -98,7 +99,22 @@ public class EquipoService {
         miembro.setEquipo(equipo);
         miembro.setUsuarioId(usuarioId);
         miembro.setRolDentroEquipo(rol);
+        miembro.setEstado("ACTIVO");
         return miembro;
+    }
+
+    private void cambiarEstadoEquipo(Equipo equipo, String estado) {
+        String estadoNormalizado = estado.toUpperCase();
+        equipo.setEstado(estadoNormalizado);
+        if ("INACTIVO".equals(estadoNormalizado)) {
+            equipo.getIntegrantes().forEach(miembro -> miembro.setEstado("INACTIVO"));
+        } else if ("ACTIVO".equals(estadoNormalizado)) {
+            equipo.getIntegrantes().forEach(miembro -> miembro.setEstado("ACTIVO"));
+        }
+    }
+
+    private boolean miembroActivo(MiembroEquipo miembro) {
+        return miembro.getEstado() == null || "ACTIVO".equals(miembro.getEstado());
     }
 
     private void validarUsuarioPuedeCompetir(Long usuarioId) {

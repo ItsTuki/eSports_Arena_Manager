@@ -62,7 +62,7 @@ public class AuthController {
     }
 
     @PutMapping("/cuentas/{id}")
-    public CuentaAcceso actualizar(@PathVariable Long id, @RequestBody ActualizarCuentaRequest request) {
+    public CuentaAcceso actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarCuentaRequest request) {
         return service.actualizar(id, request);
     }
 

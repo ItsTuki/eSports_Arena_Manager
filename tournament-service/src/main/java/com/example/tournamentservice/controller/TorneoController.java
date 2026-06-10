@@ -21,7 +21,7 @@ public class TorneoController {
     @PostMapping public ResponseEntity<Torneo> crear(@Valid @RequestBody TorneoRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(request)); }
     @GetMapping public List<Torneo> listar(@RequestParam(required = false) Long juegoId, @RequestParam(required = false) String estado, @RequestParam(required = false) LocalDate fecha) { return service.listar(juegoId, estado, fecha); }
     @GetMapping("/{id}") public Torneo buscar(@PathVariable Long id) { return service.buscar(id); }
-    @PutMapping("/{id}") public Torneo actualizar(@PathVariable Long id, @RequestBody TorneoUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Torneo actualizar(@PathVariable Long id, @Valid @RequestBody TorneoUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/estado") public Torneo estado(@PathVariable Long id, @RequestParam String nuevoEstado) { return service.actualizar(id, new TorneoUpdate(null, null, null, null, nuevoEstado)); }
     @PatchMapping("/{id}/cerrar") public Torneo cerrar(@PathVariable Long id) { return service.cerrar(id); }
     @PatchMapping("/{id}/cancelar") public Torneo cancelar(@PathVariable Long id) { return service.cancelar(id); }

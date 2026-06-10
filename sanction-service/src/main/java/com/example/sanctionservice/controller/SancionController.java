@@ -22,6 +22,6 @@ public class SancionController {
     @GetMapping public List<Sancion> listar(@RequestParam(required = false) Long usuarioId, @RequestParam(required = false) Long equipoId, @RequestParam(required = false) String estado) { return service.listar(usuarioId, equipoId, estado); }
     @GetMapping("/{id}") public Sancion buscar(@PathVariable Long id) { return service.buscar(id); }
     @GetMapping("/bloqueo") public Map<String, Boolean> bloqueo(@RequestParam(required = false) Long usuarioId, @RequestParam(required = false) Long equipoId) { return Map.of("bloqueaInscripcion", service.bloqueaInscripcion(usuarioId, equipoId)); }
-    @PutMapping("/{id}") public Sancion actualizar(@PathVariable Long id, @RequestBody SancionUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Sancion actualizar(@PathVariable Long id, @Valid @RequestBody SancionUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/cerrar") public Sancion cerrar(@PathVariable Long id) { return service.cerrar(id); }
 }

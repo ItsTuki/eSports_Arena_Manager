@@ -20,7 +20,7 @@ public class RankingController {
     @PostMapping public ResponseEntity<Ranking> crear(@Valid @RequestBody RankingRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(request)); }
     @GetMapping public List<Ranking> listar(@RequestParam(required = false) Long torneoId) { return service.listar(torneoId); }
     @GetMapping("/posicion") public Ranking posicion(@RequestParam Long torneoId, @RequestParam Long participanteId) { return service.posicion(torneoId, participanteId); }
-    @PutMapping("/{id}") public Ranking actualizar(@PathVariable Long id, @RequestBody RankingUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Ranking actualizar(@PathVariable Long id, @Valid @RequestBody RankingUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/torneos/{torneoId}/cerrar") public List<Ranking> cerrar(@PathVariable Long torneoId) { return service.cerrar(torneoId); }
     @PatchMapping("/torneos/{torneoId}/reiniciar") public List<Ranking> reiniciar(@PathVariable Long torneoId) { return service.reiniciar(torneoId); }
 }

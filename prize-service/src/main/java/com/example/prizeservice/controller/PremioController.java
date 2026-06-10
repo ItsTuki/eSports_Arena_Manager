@@ -22,7 +22,7 @@ public class PremioController {
     @PostMapping public ResponseEntity<Premio> crear(@Valid @RequestBody PremioRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(request)); }
     @GetMapping public List<Premio> listar(@RequestParam(required = false) Long torneoId, @RequestParam(required = false) Integer posicion) { return service.listar(torneoId, posicion); }
     @GetMapping("/{id}") public Premio buscar(@PathVariable Long id) { return service.buscar(id); }
-    @PutMapping("/{id}") public Premio actualizar(@PathVariable Long id, @RequestBody PremioUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Premio actualizar(@PathVariable Long id, @Valid @RequestBody PremioUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/desactivar") public Premio desactivar(@PathVariable Long id) { return service.desactivar(id); }
     @DeleteMapping("/{id}/desactivar") public Premio desactivarDelete(@PathVariable Long id) { return service.desactivar(id); }
     @PostMapping("/{id}/asignaciones") public PremioAsignado asignar(@PathVariable Long id, @Valid @RequestBody AsignarRequest request) { return service.asignar(id, request); }

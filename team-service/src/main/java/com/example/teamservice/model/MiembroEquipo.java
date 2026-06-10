@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,6 +26,8 @@ public class MiembroEquipo {
     private Long usuarioId;
     @Column(nullable = false)
     private String rolDentroEquipo;
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'ACTIVO'")
+    private String estado = "ACTIVO";
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -34,4 +37,11 @@ public class MiembroEquipo {
     public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
     public String getRolDentroEquipo() { return rolDentroEquipo; }
     public void setRolDentroEquipo(String rolDentroEquipo) { this.rolDentroEquipo = rolDentroEquipo; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    @PrePersist
+    public void prePersist() {
+        if (estado == null) estado = "ACTIVO";
+    }
 }

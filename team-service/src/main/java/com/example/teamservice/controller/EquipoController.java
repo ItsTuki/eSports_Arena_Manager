@@ -32,7 +32,7 @@ public class EquipoController {
     @GetMapping("/{id}") public Equipo buscar(@PathVariable Long id) { return service.buscar(id); }
     @PostMapping("/{id}/miembros") public Equipo agregarMiembro(@PathVariable Long id, @Valid @RequestBody MiembroRequest request) { return service.agregarMiembro(id, request); }
     @GetMapping("/{id}/puede-inscribirse") public Map<String, Boolean> puede(@PathVariable Long id) { return Map.of("puedeInscribirse", service.puedeInscribirse(id)); }
-    @PutMapping("/{id}") public Equipo actualizar(@PathVariable Long id, @RequestBody EquipoUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Equipo actualizar(@PathVariable Long id, @Valid @RequestBody EquipoUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/desactivar") public Equipo desactivar(@PathVariable Long id) { return service.desactivar(id); }
     @DeleteMapping("/{id}/desactivar") public Equipo desactivarDelete(@PathVariable Long id) { return service.desactivar(id); }
 }
