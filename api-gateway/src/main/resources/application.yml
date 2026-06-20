@@ -1,0 +1,74 @@
+server:
+  port: 8070
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/usuarios/**
+        - id: team-service
+          uri: lb://team-service
+          predicates:
+            - Path=/api/v1/equipos/**
+        - id: tournament-service
+          uri: lb://tournament-service
+          predicates:
+            - Path=/api/v1/torneos/**
+        - id: registration-service
+          uri: lb://registration-service
+          predicates:
+            - Path=/api/v1/inscripciones/**
+        - id: sanction-service
+          uri: lb://sanction-service
+          predicates:
+            - Path=/api/v1/sanciones/**
+        - id: match-service
+          uri: lb://match-service
+          predicates:
+            - Path=/api/v1/partidas/**
+        - id: game-service
+          uri: lb://game-service
+          predicates:
+            - Path=/api/v1/juegos/**
+        - id: result-service
+          uri: lb://result-service
+          predicates:
+            - Path=/api/v1/resultados/**
+        - id: ranking-service
+          uri: lb://ranking-service
+          predicates:
+            - Path=/api/v1/rankings/**
+        - id: prize-service
+          uri: lb://prize-service
+          predicates:
+            - Path=/api/v1/premios/**
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notificaciones/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
