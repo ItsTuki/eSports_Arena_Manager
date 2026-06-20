@@ -25,5 +25,7 @@
         <module>ranking-service</module>
         <module>prize-service</module>
         <module>notification-service</module>
+        <module>discovery-server</module>
+        <module>api-gateway</module>
     </modules>
 </project>

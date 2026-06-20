@@ -18,6 +18,8 @@ Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
 
 | Servicio             | Puerto | Base de datos      | MySQL puerto |
 |----------------------|--------|--------------------|-------------|
+| `discovery-server`   | 8761   | No aplica          | No aplica   |
+| `api-gateway`        | 8070   | No aplica          | No aplica   |
 | `auth-service`       | 8080   | `db_auth`          | 3306        |
 | `user-service`       | 8081   | `db_users`         | 3306        |
 | `team-service`       | 8082   | `db_teams`         | 3306        |
@@ -52,6 +54,26 @@ Cada microservicio expone su documentación Swagger UI en la ruta `/doc/swagger-
 | `notification-service` | `http://localhost:8091/doc/swagger-ui/index.html` |
 
 También queda disponible el JSON OpenAPI en `/v3/api-docs` dentro de cada microservicio.
+
+## API Gateway, Eureka y HATEOAS
+
+El proyecto incorpora un servidor Eureka para descubrimiento de servicios y un API Gateway como punto unico de entrada.
+
+| Componente | URL |
+|------------|-----|
+| Eureka Dashboard | `http://localhost:8761` |
+| API Gateway | `http://localhost:8070` |
+
+Las rutas publicas del Gateway mantienen los mismos paths `/api/v1` de cada microservicio. Ejemplos:
+
+```text
+http://localhost:8070/api/v1/usuarios
+http://localhost:8070/api/v1/equipos
+http://localhost:8070/api/v1/torneos
+http://localhost:8070/api/v1/inscripciones
+```
+
+Cada microservicio tambien agrega enlaces HATEOAS en la cabecera HTTP `Link` para las rutas `/api/v1/**`, sin cambiar el JSON de respuesta. Esto permite mantener compatibilidad con Feign y Postman.
 
 ## Instrucciones de ejecución
 
@@ -93,15 +115,23 @@ Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hi
 
 1. Abrir XAMPP.
 2. Iniciar el servicio **MySQL**.
-3. Ejecutar cada microservicio desde su carpeta:
+3. Ejecutar primero el servidor Eureka:
+
+```bash
+cd discovery-server
+mvn spring-boot:run
+```
+
+4. Ejecutar cada microservicio desde su carpeta:
 
 ```bash
 mvn spring-boot:run
 ```
 
-4. Orden recomendado de ejecución:
+5. Orden recomendado de ejecución:
 
 ```text
+discovery-server
 user-service
 auth-service
 game-service
@@ -114,9 +144,17 @@ result-service
 ranking-service
 prize-service
 notification-service
+api-gateway
 ```
 
-5. Probar los flujos principales con la colección de postman(collecion de postman.txt)
+6. Ejecutar el Gateway al final:
+
+```bash
+cd api-gateway
+mvn spring-boot:run
+```
+
+7. Probar los flujos principales con la colección de postman(collecion de postman.txt), usando `http://localhost:8070` si se quiere probar por Gateway.
 
 
 
