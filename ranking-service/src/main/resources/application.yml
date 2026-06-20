@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: ranking-service
+  datasource:
+    url: "jdbc:mysql://localhost:3306/db_rankings?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    username: ${DB_USERNAME:root}
+    password: "${DB_PASSWORD:}"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8089
+
+services:
+  tournament:
+    url: ${TOURNAMENT_SERVICE_URL:http://localhost:8083}
+  registration:
+    url: ${REGISTRATION_SERVICE_URL:http://localhost:8084}
+  result:
+    url: ${RESULT_SERVICE_URL:http://localhost:8088}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /doc/swagger-ui.html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
