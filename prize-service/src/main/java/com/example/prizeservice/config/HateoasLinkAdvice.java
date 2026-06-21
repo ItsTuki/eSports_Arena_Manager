@@ -1,4 +1,4 @@
-﻿package com.example.prizeservice.config;
+package com.example.prizeservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

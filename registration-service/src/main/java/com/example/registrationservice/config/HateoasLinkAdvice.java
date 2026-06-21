@@ -1,4 +1,4 @@
-﻿package com.example.registrationservice.config;
+package com.example.registrationservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

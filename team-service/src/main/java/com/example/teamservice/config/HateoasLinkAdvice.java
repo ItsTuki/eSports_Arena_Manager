@@ -1,4 +1,4 @@
-﻿package com.example.teamservice.config;
+package com.example.teamservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

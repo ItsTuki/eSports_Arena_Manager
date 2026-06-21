@@ -1,4 +1,4 @@
-﻿package com.example.notificationservice.config;
+package com.example.notificationservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

@@ -1,4 +1,4 @@
-﻿package com.example.authservice.config;
+package com.example.authservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

@@ -1,4 +1,4 @@
-﻿package com.example.sanctionservice.config;
+package com.example.sanctionservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

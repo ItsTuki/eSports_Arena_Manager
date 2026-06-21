@@ -1,4 +1,4 @@
-﻿package com.example.gameservice.config;
+package com.example.gameservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

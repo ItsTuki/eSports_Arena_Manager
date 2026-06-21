@@ -1,4 +1,4 @@
-﻿package com.example.matchservice.config;
+package com.example.matchservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

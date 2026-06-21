@@ -1,4 +1,4 @@
-﻿package com.example.tournamentservice.config;
+package com.example.tournamentservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

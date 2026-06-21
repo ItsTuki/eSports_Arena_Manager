@@ -115,11 +115,13 @@ Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hi
 
 1. Abrir XAMPP.
 2. Iniciar el servicio **MySQL**.
-3. Ejecutar primero el servidor Eureka:
+3. Ejecutar primero el servidor Eureka.
+
+En Windows, usar el wrapper Maven incluido desde la raíz del proyecto:
 
 ```bash
-cd discovery-server
-mvn spring-boot:run
+cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
+.\mvnw.cmd -pl discovery-server spring-boot:run
 ```
 
 4. Ejecutar cada microservicio desde su carpeta:
@@ -147,11 +149,13 @@ notification-service
 api-gateway
 ```
 
-6. Ejecutar el Gateway al final:
+6. Ejecutar el Gateway al final.
+
+En Windows, usar:
 
 ```bash
-cd api-gateway
-mvn spring-boot:run
+cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
+.\mvnw.cmd -pl api-gateway spring-boot:run
 ```
 
 7. Probar los flujos principales con la colección de postman(collecion de postman.txt), usando `http://localhost:8070` si se quiere probar por Gateway.

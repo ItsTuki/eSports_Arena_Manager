@@ -1,4 +1,4 @@
-﻿package com.example.rankingservice.config;
+package com.example.rankingservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

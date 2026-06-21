@@ -1,4 +1,4 @@
-﻿package com.example.resultservice.config;
+package com.example.resultservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;

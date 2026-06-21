@@ -1,4 +1,4 @@
-﻿package com.example.userservice.config;
+package com.example.userservice.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;
