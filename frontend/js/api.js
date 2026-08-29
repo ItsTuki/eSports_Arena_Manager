@@ -34,6 +34,32 @@ export class ApiClient {
     this.useMock = !!value;
   }
 
+  async checkHealth() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(`${this.baseUrl}/api/v1/torneos`, { 
+        method: 'GET',
+        signal: controller.signal
+      }).catch(() => null);
+      clearTimeout(timeoutId);
+
+      if (res && (res.ok || res.status === 200 || res.status === 401 || res.status === 403)) {
+        return true;
+      }
+
+      const resActuator = await fetch(`${this.baseUrl}/actuator/health`, { method: 'GET' }).catch(() => null);
+      if (resActuator && (resActuator.ok || resActuator.status === 200)) {
+        return true;
+      }
+
+      const resJuegos = await fetch(`${this.baseUrl}/api/v1/juegos`, { method: 'GET' }).catch(() => null);
+      return !!(resJuegos && (resJuegos.ok || resJuegos.status === 200 || resJuegos.status === 401 || resJuegos.status === 403));
+    } catch {
+      return false;
+    }
+  }
+
   async request(path, options = {}) {
     if (this.useMock) {
       return null;
@@ -88,7 +114,7 @@ export class ApiClient {
       }
       return await response.text();
     } catch (err) {
-      console.warn(`[API Client] Fallo petición a ${url}:`, err.message);
+      console.warn(`[API Client] Falló petición a ${url}:`, err.message);
       throw err;
     }
   }
@@ -112,9 +138,16 @@ export class ApiClient {
 
   async crearJuego(data) {
     try {
+      const payload = {
+        nombre: data.nombre,
+        genero: data.genero || data.categoria || 'Tactical Shooter',
+        modalidad: (data.minimoPorEquipo === 1 || data.jugadoresPorEquipo === 1) ? 'INDIVIDUAL' : 'EQUIPO',
+        jugadoresPorEquipo: Number(data.jugadoresPorEquipo || data.minimoPorEquipo || data.tamanoEquipo || 5),
+        reglasGenerales: data.reglasGenerales || data.descripcion || 'Reglamento oficial de la arena.'
+      };
       return await this.request(`/api/v1/juegos`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
     } catch {
       const nuevo = { id: Date.now(), ...data, activo: true };
@@ -156,9 +189,24 @@ export class ApiClient {
 
   async crearTorneo(data) {
     try {
+      const fechaIni = String(data.fechaInicio).includes('T') ? String(data.fechaInicio) : `${data.fechaInicio}T10:00:00`;
+      const fechaEnd = String(data.fechaFin || data.fechaInicio).includes('T') ? String(data.fechaFin || data.fechaInicio) : `${data.fechaFin || data.fechaInicio}T23:00:00`;
+      const fechaCierre = String(data.fechaCierreInscripcion || data.fechaCierre).includes('T') ? String(data.fechaCierreInscripcion || data.fechaCierre) : `${data.fechaCierreInscripcion || data.fechaCierre}T23:59:59`;
+
+      const payload = {
+        nombre: data.nombre,
+        juegoId: Number(data.juegoId || 1),
+        fechaInicio: fechaIni,
+        fechaFin: fechaEnd,
+        fechaCierreInscripcion: fechaCierre,
+        cupoMaximo: Number(data.cupoMaximo || 16),
+        modalidad: data.modalidad || 'EQUIPO',
+        estado: data.estado || 'ABIERTO'
+      };
+
       return await this.request(`/api/v1/torneos`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
     } catch {
       const nuevo = { id: Date.now(), cuposOcupados: 0, estado: 'ABIERTO', ...data };
@@ -190,15 +238,24 @@ export class ApiClient {
 
   async inscribir(data) {
     try {
+      const payload = {
+        torneoId: Number(data.torneoId),
+        tipoParticipante: data.tipoParticipante ? data.tipoParticipante.toUpperCase() : 'EQUIPO',
+        equipoId: data.tipoParticipante === 'INDIVIDUAL' ? null : Number(data.equipoId || data.participanteId),
+        jugadorId: data.tipoParticipante === 'INDIVIDUAL' ? Number(data.jugadorId || data.participanteId) : null,
+        participanteSancionado: false,
+        torneoAbierto: true
+      };
+
       return await this.request(`/api/v1/inscripciones`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
-    } catch {
+    } catch (err) {
       const nueva = {
         id: Date.now(),
         fechaInscripcion: new Date().toISOString(),
-        estado: 'PENDIENTE',
+        estado: 'APROBADA',
         ...data
       };
       MOCK_INSCRIPCIONES.push(nueva);
@@ -240,9 +297,19 @@ export class ApiClient {
 
   async crearEquipo(data) {
     try {
+      const capId = Number(data.capitanId || 3);
+      const payload = {
+        nombre: data.nombre,
+        capitanId: capId,
+        juegoPrincipalId: Number(data.juegoPrincipalId || data.juegoId || 1),
+        integrantes: data.integrantes || [
+          { usuarioId: capId, rolDentroEquipo: 'Capitán' }
+        ]
+      };
+
       return await this.request(`/api/v1/equipos`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
     } catch {
       const nuevo = {
@@ -258,9 +325,13 @@ export class ApiClient {
 
   async agregarMiembroEquipo(equipoId, miembroData) {
     try {
+      const payload = {
+        usuarioId: Number(miembroData.usuarioId || Date.now()),
+        rolDentroEquipo: miembroData.rol || miembroData.rolDentroEquipo || 'Duelista'
+      };
       return await this.request(`/api/v1/equipos/${equipoId}/miembros`, {
         method: 'POST',
-        body: JSON.stringify(miembroData)
+        body: JSON.stringify(payload)
       });
     } catch {
       const eq = MOCK_EQUIPOS.find(e => e.id === Number(equipoId));
@@ -320,7 +391,30 @@ export class ApiClient {
     }
   }
 
-  // --- 6. RANKINGS (ranking-service) ---
+  // --- 6. RESULTADOS (result-service) ---
+  async crearResultado(data) {
+    try {
+      return await this.request(`/api/v1/resultados`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    } catch {
+      return { id: Date.now(), ...data, validado: true };
+    }
+  }
+
+  async actualizarResultado(id, data) {
+    try {
+      return await this.request(`/api/v1/resultados/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    } catch {
+      return { id, ...data };
+    }
+  }
+
+  // --- 7. RANKINGS (ranking-service) ---
   async getRankings(torneoId) {
     try {
       return await this.request(`/api/v1/rankings?torneoId=${torneoId}`);
@@ -329,7 +423,7 @@ export class ApiClient {
     }
   }
 
-  // --- 7. PREMIOS (prize-service) ---
+  // --- 8. PREMIOS (prize-service) ---
   async getPremios(torneoId) {
     try {
       return await this.request(`/api/v1/premios?torneoId=${torneoId}`);
@@ -351,7 +445,7 @@ export class ApiClient {
     }
   }
 
-  // --- 8. SANCIONES (sanction-service) ---
+  // --- 9. SANCIONES (sanction-service) ---
   async getSanciones(usuarioId = null) {
     try {
       const query = usuarioId ? `?usuarioId=${usuarioId}` : '';
@@ -377,7 +471,7 @@ export class ApiClient {
     }
   }
 
-  // --- 9. USUARIOS (user-service) ---
+  // --- 10. USUARIOS (user-service) ---
   async getUsuarios(rol = '') {
     try {
       const query = rol ? `?rol=${rol}` : '';
@@ -398,7 +492,7 @@ export class ApiClient {
     }
   }
 
-  // --- 10. NOTIFICACIONES (notification-service) ---
+  // --- 11. NOTIFICACIONES (notification-service) ---
   async getNotificaciones(usuarioId) {
     try {
       return await this.request(`/api/v1/notificaciones?usuarioId=${usuarioId}`);
@@ -412,4 +506,5 @@ export const api = new ApiClient();
 
 if (typeof window !== 'undefined') {
   window.api = api;
+  window.ApiClient = ApiClient;
 }

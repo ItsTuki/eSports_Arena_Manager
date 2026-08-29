@@ -49,7 +49,7 @@
     };
 
     // --- COMPONENTE CABECERA ---
-    function Cabecera({ vistaActual, setVistaActual, usuario, setUsuario, apiOnline, toggleApiMode }) {
+    function Cabecera({ vistaActual, setVistaActual, usuario, setUsuario, apiOnline, checkApiStatus }) {
       const handleLogout = () => {
         if (window.AuthService) window.AuthService.logout();
         setUsuario(null);
@@ -127,11 +127,27 @@
                 )}
               </ul>
 
-              <div className="d-flex align-items-center gap-3 flex-wrap">
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                {/* Indicador de Estado del Backend / Microservicios */}
+                <div 
+                  className={`badge d-flex align-items-center gap-1 py-2 px-2`} 
+                  style={{ 
+                    backgroundColor: apiOnline ? 'rgba(0, 245, 212, 0.15)' : 'rgba(255, 183, 3, 0.15)', 
+                    color: apiOnline ? 'var(--color-acento)' : '#FFB703',
+                    border: `1px solid ${apiOnline ? 'var(--color-acento)' : '#FFB703'}`,
+                    cursor: 'pointer'
+                  }}
+                  onClick={checkApiStatus}
+                  title="Click para reintentar conexión con API Gateway (Puerto 8070)"
+                >
+                  <i className={`bi ${apiOnline ? 'bi-hdd-network-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}`}></i>
+                  <span>{apiOnline ? 'Microservicios: Online (8070)' : 'Modo Offline (Simulado)'}</span>
+                </div>
+
                 {/* Selector rápido de rol para defensa / simulación EP1/EP2/EP3 */}
                 <div className="dropdown">
                   <button className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" style={{ fontSize: '12px', borderColor: 'var(--color-superficie-borde)' }}>
-                    <i className="bi bi-person-gear"></i> Rol Simulado: <strong>{usuario ? usuario.rol : 'VISITANTE'}</strong>
+                    <i className="bi bi-person-gear"></i> Rol: <strong>{usuario ? usuario.rol : 'VISITANTE'}</strong>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-dark dropdown-menu-end">
                     <li><h6 className="dropdown-header">Cambiar Rol (Defensa EP1/EP2/EP3)</h6></li>
@@ -145,12 +161,7 @@
 
                 {/* Enlace a Pruebas Jasmine EP2 */}
                 <a href="tests/SpecRunner.html" target="_blank" className="btn btn-sm btn-outline-info d-flex align-items-center gap-1" style={{ fontSize: '12px' }} title="Ejecutar suite de 10 pruebas unitarias con Jasmine">
-                  <i className="bi bi-check2-circle"></i> Tests Jasmine (EP2)
-                </a>
-
-                {/* Enlace a Base EP1 */}
-                <a href="ep1-base/index.html" target="_blank" className="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style={{ fontSize: '12px' }} title="Ver base HTML5/CSS3/JS de EP1">
-                  <i className="bi bi-filetype-html"></i> Base EP1
+                  <i className="bi bi-check2-circle"></i> Jasmine
                 </a>
 
                 {/* Autenticación Real EP3 */}
@@ -160,12 +171,12 @@
                       <i className="bi bi-person-circle"></i> {usuario.apodo || usuario.nombre}
                     </span>
                     <button className="btn btn-sm btn-danger-custom" onClick={handleLogout} title="Cerrar Sesión">
-                      <i className="bi bi-box-arrow-right"></i> Salir
+                      <i className="bi bi-box-arrow-right"></i>
                     </button>
                   </div>
                 ) : (
-                  <button className="boton-primario py-1 px-3" style={{ fontSize: '14px' }} onClick={() => setVistaActual('auth')}>
-                    <i className="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                  <button className="boton-primario py-1 px-3" style={{ fontSize: '13px' }} onClick={() => setVistaActual('auth')}>
+                    <i className="bi bi-box-arrow-in-right"></i> Entrar
                   </button>
                 )}
               </div>
@@ -195,7 +206,7 @@
                 <ul className="list-unstyled small d-flex flex-column gap-1">
                   <li><i className="bi bi-hdd-network text-success me-1"></i> API Gateway: <code>http://localhost:8070</code></li>
                   <li><i className="bi bi-broadcast text-info me-1"></i> Eureka Discovery: <code>http://localhost:8761</code></li>
-                  <li><i className="bi bi-file-code text-warning me-1"></i> Swagger UI: <code>/doc/swagger-ui/index.html</code></li>
+                  <li><i className="bi bi-file-code text-warning me-1"></i> Documentación REST: <code>Documento_Integracion_API.md</code></li>
                 </ul>
               </div>
               <div className="col-md-4">
@@ -232,7 +243,7 @@
       const fueraPlazo = tournamentUtils.inscripcionFueraDePlazo(torneo.fechaCierreInscripcion);
 
       return (
-        <article className="tarjeta h-100 d-flex flex-direction-column justify-content-between">
+        <article className="tarjeta h-100 d-flex flex-column justify-content-between">
           <div>
             <div className="d-flex justify-content-between align-items-start mb-2">
               <span className="badge" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff', border: '1px solid rgba(145, 70, 255, 0.4)' }}>
@@ -252,7 +263,7 @@
               <div className="d-flex justify-content-between mb-1">
                 <span className="text-muted"><i className="bi bi-calendar-event me-1"></i> Cierre Inscripción:</span>
                 <span className={fueraPlazo ? 'text-danger' : ''}>
-                  {new Date(torneo.fechaCierreInscripcion).toLocaleDateString()}
+                  {torneo.fechaCierreInscripcion ? new Date(torneo.fechaCierreInscripcion).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
               {torneo.premioTotal && (
@@ -354,7 +365,7 @@
         return (
           <div className="text-center p-4 text-muted">
             <i className="bi bi-diagram-3 display-6 d-block mb-2" style={{ opacity: 0.4 }}></i>
-            Las llaves competitivas aún no han sido generadas por el organizador.
+            Las llaves competitivas aún no han sido generadas para este torneo.
           </div>
         );
       }
@@ -481,7 +492,22 @@
 
     // --- 1. VISTA INICIO ---
     function VistaInicio({ setVistaActual, onSeleccionarTorneo }) {
-      const torneosDestacados = window.MockData?.MOCK_TORNEOS?.slice(0, 3) || [];
+      const [torneosDestacados, setTorneosDestacados] = useState([]);
+      const [cargando, setCargando] = useState(true);
+
+      useEffect(() => {
+        const cargar = async () => {
+          try {
+            const data = window.api ? await window.api.getTorneos() : (window.MockData?.MOCK_TORNEOS || []);
+            setTorneosDestacados(data ? data.slice(0, 3) : []);
+          } catch (e) {
+            setTorneosDestacados(window.MockData?.MOCK_TORNEOS?.slice(0, 3) || []);
+          } finally {
+            setCargando(false);
+          }
+        };
+        cargar();
+      }, []);
 
       return (
         <div className="container py-4">
@@ -561,17 +587,23 @@
                 Ver Catálogo Completo <i className="bi bi-arrow-right"></i>
               </button>
             </div>
-            <div className="row g-4">
-              {torneosDestacados.map(torneo => (
-                <div key={torneo.id} className="col-md-4">
-                  <TarjetaTorneo 
-                    torneo={torneo} 
-                    onVerDetalle={(id) => { onSeleccionarTorneo(id); setVistaActual('detalle'); }}
-                    onInscribir={(id) => { onSeleccionarTorneo(id); setVistaActual('inscripcion'); }}
-                  />
-                </div>
-              ))}
-            </div>
+            {cargando ? (
+              <div className="text-center py-4 text-muted">
+                <span className="spinner-border spinner-border-sm text-primary me-2"></span> Cargando torneos destacados...
+              </div>
+            ) : (
+              <div className="row g-4">
+                {torneosDestacados.map(torneo => (
+                  <div key={torneo.id} className="col-md-4">
+                    <TarjetaTorneo 
+                      torneo={torneo} 
+                      onVerDetalle={(id) => { onSeleccionarTorneo(id); setVistaActual('detalle'); }}
+                      onInscribir={(id) => { onSeleccionarTorneo(id); setVistaActual('inscripcion'); }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       );
@@ -592,10 +624,17 @@
       useEffect(() => {
         const cargarDatos = async () => {
           try {
-            const listaTorneos = window.MockData?.MOCK_TORNEOS || [];
-            const listaJuegos = window.MockData?.MOCK_JUEGOS || [];
-            setTorneos(listaTorneos);
-            setJuegos(listaJuegos);
+            setCargando(true);
+            const [listaTorneos, listaJuegos] = await Promise.all([
+              window.api ? window.api.getTorneos() : (window.MockData?.MOCK_TORNEOS || []),
+              window.api ? window.api.getJuegos() : (window.MockData?.MOCK_JUEGOS || [])
+            ]);
+            setTorneos(listaTorneos || []);
+            setJuegos(listaJuegos || []);
+          } catch (err) {
+            console.warn("Fallo cargando torneos desde API:", err);
+            setTorneos(window.MockData?.MOCK_TORNEOS || []);
+            setJuegos(window.MockData?.MOCK_JUEGOS || []);
           } finally {
             setCargando(false);
           }
@@ -622,7 +661,7 @@
         return torneos.filter(t => {
           if (filtroJuego && String(t.juegoId) !== String(filtroJuego)) return false;
           if (filtroEstado && t.estado !== filtroEstado) return false;
-          if (busqueda && !t.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false;
+          if (busqueda && !t.nombre?.toLowerCase().includes(busqueda.toLowerCase())) return false;
           if (fechaInicio && new Date(t.fechaInicio).getTime() < new Date(fechaInicio).getTime()) return false;
           if (fechaFin && new Date(t.fechaFin).getTime() > new Date(fechaFin).getTime()) return false;
           return true;
@@ -712,7 +751,7 @@
           {cargando ? (
             <div className="text-center py-5 text-muted">
               <div className="spinner-border text-primary mb-2" role="status"></div>
-              <div>Cargando torneos competitivos...</div>
+              <div>Cargando torneos competitivos desde microservicios...</div>
             </div>
           ) : torneosFiltrados.length > 0 ? (
             <div className="row g-4">
@@ -730,9 +769,9 @@
             <EstadoVacio 
               icono="bi-search" 
               titulo="No se encontraron torneos" 
-              mensaje="No hay torneos que coincidan con los criterios o el rango de fechas ingresado."
-              botonTexto="Restablecer Filtros"
-              onBotonClick={resetFiltros}
+              mensaje="No hay torneos que coincidan con los criterios o el rango de fechas ingresado." 
+              botonTexto="Restablecer Filtros" 
+              onBotonClick={resetFiltros} 
             />
           )}
         </div>
@@ -747,16 +786,57 @@
       const [ranking, setRanking] = useState([]);
       const [premios, setPremios] = useState([]);
       const [pestanaActiva, setPestanaActiva] = useState('llaves');
+      const [cargando, setCargando] = useState(true);
 
       useEffect(() => {
-        const id = Number(torneoId) || 2;
-        const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
-        setTorneo(t);
-        setInscripciones(window.MockData?.MOCK_INSCRIPCIONES?.filter(i => i.torneoId === t.id) || []);
-        setPartidas(window.MockData?.MOCK_PARTIDAS?.filter(p => p.torneoId === t.id) || []);
-        setRanking(window.MockData?.MOCK_RANKINGS?.filter(r => r.torneoId === t.id) || []);
-        setPremios(window.MockData?.MOCK_PREMIOS?.filter(pr => pr.torneoId === t.id) || []);
+        const cargarDetalle = async () => {
+          const id = Number(torneoId) || 1;
+          try {
+            setCargando(true);
+            if (window.api) {
+              const [tData, insData, pData, rData, prData] = await Promise.all([
+                window.api.getTorneoById(id),
+                window.api.getInscripcionesPorTorneo(id),
+                window.api.getPartidas(id),
+                window.api.getRankings(id),
+                window.api.getPremios(id)
+              ]);
+              setTorneo(tData || window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0]);
+              setInscripciones(insData || []);
+              setPartidas(pData || []);
+              setRanking(rData || []);
+              setPremios(prData || []);
+            } else {
+              const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+              setTorneo(t);
+              setInscripciones(window.MockData?.MOCK_INSCRIPCIONES?.filter(i => i.torneoId === t.id) || []);
+              setPartidas(window.MockData?.MOCK_PARTIDAS?.filter(p => p.torneoId === t.id) || []);
+              setRanking(window.MockData?.MOCK_RANKINGS?.filter(r => r.torneoId === t.id) || []);
+              setPremios(window.MockData?.MOCK_PREMIOS?.filter(pr => pr.torneoId === t.id) || []);
+            }
+          } catch (e) {
+            console.warn("Fallo cargando detalle del torneo:", e);
+            const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+            setTorneo(t);
+            setInscripciones(window.MockData?.MOCK_INSCRIPCIONES?.filter(i => i.torneoId === t.id) || []);
+            setPartidas(window.MockData?.MOCK_PARTIDAS?.filter(p => p.torneoId === t.id) || []);
+            setRanking(window.MockData?.MOCK_RANKINGS?.filter(r => r.torneoId === t.id) || []);
+            setPremios(window.MockData?.MOCK_PREMIOS?.filter(pr => pr.torneoId === t.id) || []);
+          } finally {
+            setCargando(false);
+          }
+        };
+        cargarDetalle();
       }, [torneoId]);
+
+      if (cargando) {
+        return (
+          <div className="container py-5 text-center text-muted">
+            <div className="spinner-border text-primary mb-2" role="status"></div>
+            <div>Cargando detalle del torneo y llaves...</div>
+          </div>
+        );
+      }
 
       if (!torneo) return null;
 
@@ -775,19 +855,19 @@
               <div className="col-lg-8">
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <span className="badge" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff' }}>
-                    {torneo.juegoNombre}
+                    {torneo.juegoNombre || `Juego #${torneo.juegoId}`}
                   </span>
                   <span className={`insignia ${torneo.estado === 'ABIERTO' ? 'insignia-abierto' : torneo.estado === 'EN_CURSO' ? 'insignia-en-curso' : 'insignia-finalizado'}`}>
                     {torneo.estado}
                   </span>
-                  <span className="badge bg-secondary">Modalidad: {torneo.modalidad}</span>
+                  <span className="badge bg-secondary">Modalidad: {torneo.modalidad || 'EQUIPO'}</span>
                 </div>
                 <h2 className="text-white mb-2">{torneo.nombre}</h2>
                 <p className="text-muted mb-3">{torneo.descripcion}</p>
                 <div className="small text-muted d-flex gap-4 flex-wrap">
-                  <span><i className="bi bi-calendar-event me-1"></i> Inicio: <strong>{new Date(torneo.fechaInicio).toLocaleDateString()}</strong></span>
-                  <span><i className="bi bi-calendar-check me-1"></i> Cierre: <strong>{new Date(torneo.fechaCierreInscripcion).toLocaleDateString()}</strong></span>
-                  <span><i className="bi bi-cash-stack me-1"></i> Premios: <strong style={{ color: 'var(--color-acento)' }}>{torneo.premioTotal}</strong></span>
+                  <span><i className="bi bi-calendar-event me-1"></i> Inicio: <strong>{torneo.fechaInicio ? new Date(torneo.fechaInicio).toLocaleDateString() : 'Por confirmar'}</strong></span>
+                  <span><i className="bi bi-calendar-check me-1"></i> Cierre: <strong>{torneo.fechaCierreInscripcion ? new Date(torneo.fechaCierreInscripcion).toLocaleDateString() : 'Por confirmar'}</strong></span>
+                  <span><i className="bi bi-cash-stack me-1"></i> Premios: <strong style={{ color: 'var(--color-acento)' }}>{torneo.premioTotal || 'Por definir'}</strong></span>
                   <span><i className="bi bi-people me-1"></i> Cupos Disponibles: <strong>{cuposRestantes}</strong></span>
                 </div>
               </div>
@@ -819,7 +899,7 @@
             </li>
             <li className="nav-item">
               <button className={`nav-link ${pestanaActiva === 'partidas' ? 'active bg-dark text-white' : 'text-muted'}`} onClick={() => setPestanaActiva('partidas')}>
-                <i className="bi bi-clock-history me-1"></i> Partidas y Horarios
+                <i className="bi bi-clock-history me-1"></i> Partidas ({partidas.length})
               </button>
             </li>
             <li className="nav-item">
@@ -856,19 +936,23 @@
             {pestanaActiva === 'participantes' && (
               <div>
                 <h5 className="text-white mb-3"><i className="bi bi-people me-2"></i> Lista de Participantes Confirmados</h5>
-                <div className="row g-3">
-                  {inscripciones.map(ins => (
-                    <div key={ins.id} className="col-md-4">
-                      <div className="p-3 rounded d-flex justify-content-between align-items-center" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
-                        <div>
-                          <strong>{ins.participanteNombre}</strong>
-                          <div className="small text-muted">Tipo: {ins.tipoParticipante}</div>
+                {inscripciones.length > 0 ? (
+                  <div className="row g-3">
+                    {inscripciones.map(ins => (
+                      <div key={ins.id} className="col-md-4">
+                        <div className="p-3 rounded d-flex justify-content-between align-items-center" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                          <div>
+                            <strong>{ins.participanteNombre}</strong>
+                            <div className="small text-muted">Tipo: {ins.tipoParticipante}</div>
+                          </div>
+                          <span className="badge bg-success">{ins.estado}</span>
                         </div>
-                        <span className="badge bg-success">{ins.estado}</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EstadoVacio icono="bi-people" titulo="Sin inscripciones" mensaje="Aún no hay participantes inscritos en este torneo." />
+                )}
               </div>
             )}
 
@@ -907,18 +991,40 @@
       const [misEquipos, setMisEquipos] = useState([]);
       const [sancionesUsuario, setSancionesUsuario] = useState([]);
       const [mensajeExito, setMensajeExito] = useState('');
+      const [mensajeError, setMensajeError] = useState('');
       const [cargando, setCargando] = useState(false);
 
       useEffect(() => {
-        const id = Number(torneoId) || 1;
-        const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
-        setTorneo(t);
-        const equipos = window.MockData?.MOCK_EQUIPOS || [];
-        setMisEquipos(equipos);
-        if (equipos.length > 0) setEquipoSeleccionadoId(String(equipos[0].id));
-
-        const sanciones = window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || [];
-        setSancionesUsuario(sanciones);
+        const cargarDatosInscripcion = async () => {
+          const id = Number(torneoId) || 1;
+          try {
+            if (window.api) {
+              const [tData, eqData, sancData] = await Promise.all([
+                window.api.getTorneoById(id),
+                window.api.getEquipos('ACTIVO'),
+                window.api.getSanciones(usuario?.id || 3)
+              ]);
+              setTorneo(tData || window.MockData?.MOCK_TORNEOS?.find(x => x.id === id));
+              const eqList = eqData || [];
+              setMisEquipos(eqList);
+              if (eqList.length > 0) setEquipoSeleccionadoId(String(eqList[0].id));
+              setSancionesUsuario(sancData || []);
+            } else {
+              const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+              setTorneo(t);
+              const equipos = window.MockData?.MOCK_EQUIPOS || [];
+              setMisEquipos(equipos);
+              if (equipos.length > 0) setEquipoSeleccionadoId(String(equipos[0].id));
+              setSancionesUsuario(window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || []);
+            }
+          } catch (err) {
+            console.warn("Fallo cargando datos de inscripción:", err);
+            const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+            setTorneo(t);
+            setMisEquipos(window.MockData?.MOCK_EQUIPOS || []);
+          }
+        };
+        cargarDatosInscripcion();
       }, [torneoId, usuario]);
 
       if (!torneo) return null;
@@ -936,26 +1042,34 @@
 
       const puedeEnviar = !fueraPlazo && !sinCupo && !tieneSancion && esEquipoCompleto && !yaInscrito && usuario;
 
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
         if (!puedeEnviar) return;
 
         setCargando(true);
-        setTimeout(() => {
-          const nuevaInscripcion = {
-            id: Date.now(),
+        setMensajeError('');
+        try {
+          const payload = {
             torneoId: torneo.id,
             tipoParticipante,
-            participanteId: Number(equipoSeleccionadoId) || usuario.id,
-            participanteNombre: tipoParticipante === 'EQUIPO' ? equipoActual?.nombre : (usuario?.apodo || usuario?.nombre),
-            estado: 'APROBADA',
-            fechaInscripcion: new Date().toISOString()
+            participanteId: Number(equipoSeleccionadoId) || (usuario?.id || 3),
+            participanteNombre: tipoParticipante === 'EQUIPO' ? (equipoActual?.nombre || 'Mi Equipo') : (usuario?.apodo || usuario?.nombre),
+            estado: 'APROBADA'
           };
-          window.MockData.MOCK_INSCRIPCIONES.push(nuevaInscripcion);
+
+          if (window.api) {
+            await window.api.inscribir(payload);
+          } else {
+            window.MockData.MOCK_INSCRIPCIONES.push({ id: Date.now(), fechaInscripcion: new Date().toISOString(), ...payload });
+          }
+
           torneo.cuposOcupados = (torneo.cuposOcupados || 0) + 1;
+          setMensajeExito(`¡Inscripción confirmada exitosamente para ${payload.participanteNombre}!`);
+        } catch (err) {
+          setMensajeError(err.message || 'Error al procesar inscripción.');
+        } finally {
           setCargando(false);
-          setMensajeExito(`¡Inscripción confirmada exitosamente para ${nuevaInscripcion.participanteNombre}!`);
-        }, 600);
+        }
       };
 
       return (
@@ -972,13 +1086,19 @@
               <div className="alert alert-success p-4 text-center rounded">
                 <i className="bi bi-check-circle-fill display-4 d-block mb-2 text-success"></i>
                 <h4 className="text-success">{mensajeExito}</h4>
-                <p className="small mb-3">Tu cupo ha sido reservado y podrás consultar tus partidas en la sección de llaves.</p>
+                <p className="small mb-3">Tu cupo ha sido registrado en el microservicio de inscripciones.</p>
                 <button className="boton-primario" onClick={() => setVistaActual('detalle')}>
                   Ver Llaves del Torneo
                 </button>
               </div>
             ) : (
               <form id="form-inscripcion" onSubmit={handleSubmit}>
+                {mensajeError && (
+                  <div className="alert alert-danger py-2 px-3 small mb-3">
+                    <i className="bi bi-exclamation-triangle-fill me-1"></i> {mensajeError}
+                  </div>
+                )}
+
                 {/* Advertencia de No Autenticado */}
                 {!usuario && (
                   <div className="alert alert-warning d-flex align-items-center gap-2 mb-3">
@@ -1072,7 +1192,7 @@
                 {/* Botón de Envío */}
                 <button type="submit" id="btn-confirmar-inscripcion" className="boton-primario w-100 py-3" disabled={!puedeEnviar || cargando}>
                   {cargando ? (
-                    <span><span className="spinner-border spinner-border-sm me-2"></span>Registrando...</span>
+                    <span><span className="spinner-border spinner-border-sm me-2"></span>Registrando en microservicio...</span>
                   ) : (
                     <span><i className="bi bi-check-lg me-1"></i> Confirmar Inscripción en Torneo</span>
                   )}
@@ -1095,16 +1215,29 @@
       const [nuevoMiembroRol, setNuevoMiembroRol] = useState('Duelista');
       const [errorNombre, setErrorNombre] = useState('');
       const [errorMiembro, setErrorMiembro] = useState('');
+      const [cargando, setCargando] = useState(false);
 
       useEffect(() => {
-        setEquipos(window.MockData?.MOCK_EQUIPOS || []);
-        setJuegos(window.MockData?.MOCK_JUEGOS || []);
-        if (window.MockData?.MOCK_EQUIPOS?.length > 0) {
-          setEquipoActivo(window.MockData.MOCK_EQUIPOS[0]);
-        }
+        const cargarEquipos = async () => {
+          try {
+            const [eqList, jList] = await Promise.all([
+              window.api ? window.api.getEquipos() : (window.MockData?.MOCK_EQUIPOS || []),
+              window.api ? window.api.getJuegos() : (window.MockData?.MOCK_JUEGOS || [])
+            ]);
+            setEquipos(eqList || []);
+            setJuegos(jList || []);
+            if (eqList && eqList.length > 0) {
+              setEquipoActivo(eqList[0]);
+            }
+          } catch (e) {
+            setEquipos(window.MockData?.MOCK_EQUIPOS || []);
+            setJuegos(window.MockData?.MOCK_JUEGOS || []);
+          }
+        };
+        cargarEquipos();
       }, []);
 
-      const handleCrearEquipo = (e) => {
+      const handleCrearEquipo = async (e) => {
         e.preventDefault();
         const val = validationUtils.validarNombreEquipo ? validationUtils.validarNombreEquipo(nuevoNombre, equipos) : { valido: nuevoNombre.length >= 3, mensaje: 'Nombre obligatorio' };
         if (!val.valido) {
@@ -1114,27 +1247,36 @@
         setErrorNombre('');
 
         const juegoObj = juegos.find(j => String(j.id) === String(juegoId));
-        const nuevo = {
-          id: Date.now(),
+        const payload = {
           nombre: nuevoNombre.trim(),
           juegoId: Number(juegoId),
           juegoNombre: juegoObj?.nombre || 'Juego Competitivo',
           capitanId: usuario?.id || 3,
           capitanNombre: usuario?.apodo || 'ItsTuki',
-          estado: 'ACTIVO',
-          miembros: [
-            { usuarioId: usuario?.id || 3, apodo: usuario?.apodo || 'ItsTuki', rol: 'Capitán' }
-          ]
+          estado: 'ACTIVO'
         };
 
-        const listaActualizada = [...equipos, nuevo];
-        setEquipos(listaActualizada);
-        window.MockData.MOCK_EQUIPOS.push(nuevo);
-        setEquipoActivo(nuevo);
-        setNuevoNombre('');
+        setCargando(true);
+        try {
+          let nuevo;
+          if (window.api) {
+            nuevo = await window.api.crearEquipo(payload);
+          } else {
+            nuevo = { id: Date.now(), miembros: [{ usuarioId: payload.capitanId, apodo: payload.capitanNombre, rol: 'Capitán' }], ...payload };
+            window.MockData.MOCK_EQUIPOS.push(nuevo);
+          }
+
+          setEquipos([...equipos, nuevo]);
+          setEquipoActivo(nuevo);
+          setNuevoNombre('');
+        } catch (err) {
+          setErrorNombre(err.message || 'Error al crear equipo.');
+        } finally {
+          setCargando(false);
+        }
       };
 
-      const handleAgregarMiembro = (e) => {
+      const handleAgregarMiembro = async (e) => {
         e.preventDefault();
         const val = validationUtils.validarApodo(nuevoMiembroApodo);
         if (!val.valido) {
@@ -1142,8 +1284,8 @@
           return;
         }
 
-        // Verificar duplicado en equipo
-        const yaExiste = equipoActivo.miembros.some(m => m.apodo.toLowerCase() === nuevoMiembroApodo.trim().toLowerCase());
+        const miembrosActuales = equipoActivo.miembros || [];
+        const yaExiste = miembrosActuales.some(m => m.apodo?.toLowerCase() === nuevoMiembroApodo.trim().toLowerCase());
         if (yaExiste) {
           setErrorMiembro('Este jugador ya forma parte del equipo.');
           return;
@@ -1156,20 +1298,27 @@
           rol: nuevoMiembroRol
         };
 
-        equipoActivo.miembros.push(nuevoMiembro);
-        setEquipos([...equipos]);
-        setNuevoMiembroApodo('');
+        try {
+          if (window.api && equipoActivo.id) {
+            await window.api.agregarMiembroEquipo(equipoActivo.id, nuevoMiembro);
+          }
+          equipoActivo.miembros = [...miembrosActuales, nuevoMiembro];
+          setEquipos([...equipos]);
+          setNuevoMiembroApodo('');
+        } catch (err) {
+          setErrorMiembro(err.message || 'Error al agregar miembro.');
+        }
       };
 
       const handleRemoverMiembro = (apodo) => {
-        equipoActivo.miembros = equipoActivo.miembros.filter(m => m.apodo !== apodo);
+        equipoActivo.miembros = (equipoActivo.miembros || []).filter(m => m.apodo !== apodo);
         setEquipos([...equipos]);
       };
 
       return (
         <div className="container py-4">
           <h2 className="text-white mb-1"><i className="bi bi-people me-2" style={{ color: 'var(--color-primario)' }}></i> Gestión de Equipos</h2>
-          <p className="text-muted small mb-4">Administra tu plantilla de jugadores, asigna roles tácticos y crea nuevas escuadras.</p>
+          <p className="text-muted small mb-4">Administra tu plantilla de jugadores, asigna roles tácticos y crea nuevas escuadras con team-service.</p>
 
           <div className="row g-4">
             {/* Formulario Crear Equipo */}
@@ -1185,6 +1334,7 @@
                       placeholder="Ej: Phantom Knights"
                       value={nuevoNombre}
                       onChange={(e) => setNuevoNombre(e.target.value)}
+                      required
                     />
                     {errorNombre && <div className="mensaje-error"><i className="bi bi-exclamation-circle"></i> {errorNombre}</div>}
                   </div>
@@ -1198,15 +1348,15 @@
                     </select>
                   </div>
 
-                  <button type="submit" className="boton-primario w-100 py-2">
-                    <i className="bi bi-plus-circle me-1"></i> Registrar Equipo
+                  <button type="submit" className="boton-primario w-100 py-2" disabled={cargando}>
+                    {cargando ? 'Registrando...' : <span><i className="bi bi-plus-circle me-1"></i> Registrar Equipo</span>}
                   </button>
                 </form>
               </div>
 
               {/* Lista de Equipos */}
               <div className="tarjeta">
-                <h5 className="text-white mb-3">Mis Equipos Registrados</h5>
+                <h5 className="text-white mb-3">Mis Equipos Registrados ({equipos.length})</h5>
                 <div className="d-flex flex-column gap-2">
                   {equipos.map(eq => (
                     <div 
@@ -1217,7 +1367,7 @@
                     >
                       <div>
                         <strong className="text-white">{eq.nombre}</strong>
-                        <div className="small text-muted">{eq.juegoNombre} • {eq.miembros?.length || 0} integrantes</div>
+                        <div className="small text-muted">{eq.juegoNombre || `Juego #${eq.juegoId}`} • {eq.miembros?.length || 0} integrantes</div>
                       </div>
                       <span className="badge bg-success">{eq.estado}</span>
                     </div>
@@ -1232,9 +1382,9 @@
                 <div className="tarjeta">
                   <div className="d-flex justify-content-between align-items-start mb-4">
                     <div>
-                      <span className="badge mb-1" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff' }}>{equipoActivo.juegoNombre}</span>
+                      <span className="badge mb-1" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff' }}>{equipoActivo.juegoNombre || `Juego #${equipoActivo.juegoId}`}</span>
                       <h3 className="text-white mb-1">{equipoActivo.nombre}</h3>
-                      <div className="small text-muted">Capitán: <strong>{equipoActivo.capitanNombre}</strong></div>
+                      <div className="small text-muted">Capitán: <strong>{equipoActivo.capitanNombre || 'ItsTuki'}</strong></div>
                     </div>
                     <span className="badge bg-success py-2 px-3">{equipoActivo.estado}</span>
                   </div>
@@ -1321,8 +1471,23 @@
       const [telefono, setTelefono] = useState(usuario?.telefono || '+56933445566');
       const [errorApodo, setErrorApodo] = useState('');
       const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+      const [sanciones, setSanciones] = useState([]);
 
-      const sanciones = window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || [];
+      useEffect(() => {
+        const cargarSanciones = async () => {
+          try {
+            if (window.api) {
+              const res = await window.api.getSanciones(usuario?.id || 3);
+              setSanciones(res || []);
+            } else {
+              setSanciones(window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || []);
+            }
+          } catch {
+            setSanciones(window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || []);
+          }
+        };
+        cargarSanciones();
+      }, [usuario]);
 
       const handleGuardarPerfil = (e) => {
         e.preventDefault();
@@ -1339,7 +1504,7 @@
       return (
         <div className="container py-4">
           <h2 className="text-white mb-1"><i className="bi bi-person-badge me-2" style={{ color: 'var(--color-primario)' }}></i> Perfil de Jugador Competitivo</h2>
-          <p className="text-muted small mb-4">Ficha técnica, estadísticas de victorias/derrotas e historial de sanciones.</p>
+          <p className="text-muted small mb-4">Ficha técnica, estadísticas de victorias/derrotas e historial de sanciones con user-service.</p>
 
           <div className="row g-4">
             {/* Formulario de Datos */}
@@ -1529,7 +1694,7 @@
             <div className="text-center mb-4">
               <i className="bi bi-controller display-4" style={{ color: 'var(--color-primario)' }}></i>
               <h3 className="text-white mt-2">Acceso a eSports Arena</h3>
-              <p className="text-muted small">Microservicio de Autenticación con JWT (Puerto 8080/8070)</p>
+              <p className="text-muted small">Microservicio de Autenticación con JWT (Gateway :8070 / auth-service :8081)</p>
             </div>
 
             <div className="d-flex mb-4 p-1 rounded" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
@@ -1583,7 +1748,7 @@
                 </div>
 
                 <button type="submit" className="boton-primario w-100 py-2 mb-3" disabled={cargando}>
-                  {cargando ? 'Autenticando...' : 'Entrar a la Plataforma'}
+                  {cargando ? 'Autenticando en microservicio...' : 'Entrar a la Plataforma'}
                 </button>
 
                 <div className="p-2 rounded bg-dark border border-secondary small text-muted">
@@ -1652,7 +1817,7 @@
                 </div>
 
                 <button type="submit" className="boton-primario w-100 py-2" disabled={cargando}>
-                  {cargando ? 'Creando cuenta...' : 'Crear Cuenta y Entrar'}
+                  {cargando ? 'Creando cuenta en auth-service...' : 'Crear Cuenta y Entrar'}
                 </button>
               </form>
             )}
@@ -1666,7 +1831,7 @@
       const [inscripciones, setInscripciones] = useState([]);
       const [partidas, setPartidas] = useState([]);
       const [torneos, setTorneos] = useState([]);
-      const [torneoSeleccionadoId, setTorneoSeleccionadoId] = useState('2');
+      const [torneoSeleccionadoId, setTorneoSeleccionadoId] = useState('1');
       const [partidaEditando, setPartidaEditando] = useState(null);
       const [puntaje1, setPuntaje1] = useState(0);
       const [puntaje2, setPuntaje2] = useState(0);
@@ -1674,12 +1839,33 @@
       const [motivoSancion, setMotivoSancion] = useState('');
       const [usuarioSancionId, setUsuarioSancionId] = useState('6');
       const [mensajeExito, setMensajeExito] = useState('');
+      const [cargando, setCargando] = useState(false);
 
       useEffect(() => {
-        setTorneos(window.MockData?.MOCK_TORNEOS || []);
-        setInscripciones(window.MockData?.MOCK_INSCRIPCIONES || []);
-        setPartidas(window.MockData?.MOCK_PARTIDAS || []);
-      }, []);
+        const cargarDatosOrganizador = async () => {
+          try {
+            if (window.api) {
+              const [tList, insList, pList] = await Promise.all([
+                window.api.getTorneos(),
+                window.api.getInscripcionesPorTorneo(torneoSeleccionadoId),
+                window.api.getPartidas(torneoSeleccionadoId)
+              ]);
+              setTorneos(tList || []);
+              setInscripciones(insList || []);
+              setPartidas(pList || []);
+            } else {
+              setTorneos(window.MockData?.MOCK_TORNEOS || []);
+              setInscripciones(window.MockData?.MOCK_INSCRIPCIONES || []);
+              setPartidas(window.MockData?.MOCK_PARTIDAS || []);
+            }
+          } catch (e) {
+            setTorneos(window.MockData?.MOCK_TORNEOS || []);
+            setInscripciones(window.MockData?.MOCK_INSCRIPCIONES || []);
+            setPartidas(window.MockData?.MOCK_PARTIDAS || []);
+          }
+        };
+        cargarDatosOrganizador();
+      }, [torneoSeleccionadoId]);
 
       if (!usuario || (usuario.rol !== 'ORGANIZADOR' && usuario.rol !== 'ADMINISTRADOR')) {
         return (
@@ -1693,13 +1879,18 @@
         );
       }
 
-      const handleAprobarInscripcion = (id) => {
-        const ins = inscripciones.find(i => i.id === id);
-        if (ins) {
-          ins.estado = 'APROBADA';
+      const handleAprobarInscripcion = async (id) => {
+        try {
+          if (window.api) {
+            await window.api.cambiarEstadoInscripcion(id, 'APROBADA');
+          }
+          const ins = inscripciones.find(i => i.id === id);
+          if (ins) ins.estado = 'APROBADA';
           setInscripciones([...inscripciones]);
-          setMensajeExito(`Inscripción #${id} aprobada con éxito.`);
+          setMensajeExito(`Inscripción #${id} aprobada con éxito en registration-service.`);
           setTimeout(() => setMensajeExito(''), 3000);
+        } catch (err) {
+          setMensajeExito(`Error al actualizar estado: ${err.message}`);
         }
       };
 
@@ -1710,7 +1901,7 @@
         setGanadorId(partida.ganadorId ? String(partida.ganadorId) : (partida.participante1Id ? String(partida.participante1Id) : ''));
       };
 
-      const handleGuardarResultado = (e) => {
+      const handleGuardarResultado = async (e) => {
         e.preventDefault();
         if (!partidaEditando) return;
         if (puntaje1 < 0 || puntaje2 < 0) {
@@ -1718,24 +1909,55 @@
           return;
         }
 
-        partidaEditando.puntaje1 = Number(puntaje1);
-        partidaEditando.puntaje2 = Number(puntaje2);
-        partidaEditando.ganadorId = Number(ganadorId);
-        partidaEditando.ganadorNombre = ganadorId === String(partidaEditando.participante1Id) ? partidaEditando.participante1Nombre : partidaEditando.participante2Nombre;
-        partidaEditando.estado = 'FINALIZADA';
-        partidaEditando.resultadoValidado = true;
+        const gId = Number(ganadorId);
+        const gNombre = gId === partidaEditando.participante1Id ? partidaEditando.participante1Nombre : partidaEditando.participante2Nombre;
 
-        setPartidas([...partidas]);
-        setPartidaEditando(null);
-        setMensajeExito(`Resultado de Partida #${partidaEditando.id} validado correctamente.`);
-        setTimeout(() => setMensajeExito(''), 3000);
+        setCargando(true);
+        try {
+          if (window.api) {
+            // Actualizar partida en match-service
+            await window.api.actualizarPartida(partidaEditando.id, {
+              puntaje1: Number(puntaje1),
+              puntaje2: Number(puntaje2),
+              ganadorId: gId,
+              ganadorNombre: gNombre,
+              estado: 'FINALIZADA',
+              resultadoValidado: true
+            });
+            // Guardar resultado oficial en result-service
+            await window.api.crearResultado({
+              partidaId: partidaEditando.id,
+              ganadorId: gId,
+              puntajeA: Number(puntaje1),
+              puntajeB: Number(puntaje2),
+              evidencia: 'Validado por Organizador en Panel',
+              partidaExiste: true
+            });
+          }
+
+          partidaEditando.puntaje1 = Number(puntaje1);
+          partidaEditando.puntaje2 = Number(puntaje2);
+          partidaEditando.ganadorId = gId;
+          partidaEditando.ganadorNombre = gNombre;
+          partidaEditando.estado = 'FINALIZADA';
+          partidaEditando.resultadoValidado = true;
+
+          setPartidas([...partidas]);
+          setPartidaEditando(null);
+          setMensajeExito(`Resultado de Partida #${partidaEditando.id} validado en match-service y result-service.`);
+          setTimeout(() => setMensajeExito(''), 3500);
+        } catch (err) {
+          alert(`Error al guardar resultado: ${err.message}`);
+        } finally {
+          setCargando(false);
+        }
       };
 
-      const handleAplicarSancion = (e) => {
+      const handleAplicarSancion = async (e) => {
         e.preventDefault();
         if (!motivoSancion) return;
+
         const nueva = {
-          id: Date.now(),
           usuarioId: Number(usuarioSancionId),
           usuarioApodo: 'Shadow',
           motivo: motivoSancion,
@@ -1744,10 +1966,19 @@
           estado: 'ACTIVA',
           activa: true
         };
-        window.MockData.MOCK_SANCIONES.push(nueva);
-        setMotivoSancion('');
-        setMensajeExito(`Sanción aplicada exitosamente al usuario #${usuarioSancionId}.`);
-        setTimeout(() => setMensajeExito(''), 3000);
+
+        try {
+          if (window.api) {
+            await window.api.crearSancion(nueva);
+          } else {
+            window.MockData.MOCK_SANCIONES.push({ id: Date.now(), ...nueva });
+          }
+          setMotivoSancion('');
+          setMensajeExito(`Sanción disciplinaria enviada a sanction-service para usuario #${usuarioSancionId}.`);
+          setTimeout(() => setMensajeExito(''), 3500);
+        } catch (err) {
+          alert(`Error al aplicar sanción: ${err.message}`);
+        }
       };
 
       return (
@@ -1922,7 +2153,9 @@
 
                   <div className="d-flex gap-2 mt-4">
                     <button type="button" className="boton-secundario flex-grow-1" onClick={() => setPartidaEditando(null)}>Cancelar</button>
-                    <button type="submit" className="boton-primario flex-grow-1">Validar Resultado</button>
+                    <button type="submit" className="boton-primario flex-grow-1" disabled={cargando}>
+                      {cargando ? 'Validando...' : 'Validar Resultado'}
+                    </button>
                   </div>
                 </form>
               </div>
@@ -1945,10 +2178,28 @@
       const [fechaInicio, setFechaInicio] = useState('2026-10-01');
       const [fechaCierre, setFechaCierre] = useState('2026-09-28');
       const [mensajeExito, setMensajeExito] = useState('');
+      const [cargando, setCargando] = useState(false);
 
       useEffect(() => {
-        setJuegos(window.MockData?.MOCK_JUEGOS || []);
-        setTorneos(window.MockData?.MOCK_TORNEOS || []);
+        const cargarAdminDatos = async () => {
+          try {
+            if (window.api) {
+              const [jList, tList] = await Promise.all([
+                window.api.getJuegos(true),
+                window.api.getTorneos()
+              ]);
+              setJuegos(jList || []);
+              setTorneos(tList || []);
+            } else {
+              setJuegos(window.MockData?.MOCK_JUEGOS || []);
+              setTorneos(window.MockData?.MOCK_TORNEOS || []);
+            }
+          } catch {
+            setJuegos(window.MockData?.MOCK_JUEGOS || []);
+            setTorneos(window.MockData?.MOCK_TORNEOS || []);
+          }
+        };
+        cargarAdminDatos();
       }, []);
 
       if (!usuario || usuario.rol !== 'ADMINISTRADOR') {
@@ -1963,26 +2214,39 @@
         );
       }
 
-      const handleCrearJuego = (e) => {
+      const handleCrearJuego = async (e) => {
         e.preventDefault();
         if (!nombreJuego) return;
-        const nuevo = {
-          id: Date.now(),
-          nombre: nombreJuego,
+        setCargando(true);
+        const payload = {
+          nombre: nombreJuego.trim(),
           categoria: categoriaJuego,
           minimoPorEquipo: Number(minIntegrantes),
           tamanoEquipo: Number(minIntegrantes),
           descripcion: 'Juego habilitado para torneos oficiales.',
           activo: true
         };
-        window.MockData.MOCK_JUEGOS.push(nuevo);
-        setJuegos([...juegos, nuevo]);
-        setNombreJuego('');
-        setMensajeExito(`Juego ${nuevo.nombre} agregado al catálogo oficial.`);
-        setTimeout(() => setMensajeExito(''), 3000);
+
+        try {
+          let nuevo;
+          if (window.api) {
+            nuevo = await window.api.crearJuego(payload);
+          } else {
+            nuevo = { id: Date.now(), ...payload };
+            window.MockData.MOCK_JUEGOS.push(nuevo);
+          }
+          setJuegos([...juegos, nuevo]);
+          setNombreJuego('');
+          setMensajeExito(`Juego ${nuevo.nombre} agregado al catálogo oficial de game-service.`);
+          setTimeout(() => setMensajeExito(''), 3500);
+        } catch (err) {
+          alert(`Error al registrar juego: ${err.message}`);
+        } finally {
+          setCargando(false);
+        }
       };
 
-      const handleCrearTorneo = (e) => {
+      const handleCrearTorneo = async (e) => {
         e.preventDefault();
         if (!nombreTorneo) return;
         if (new Date(fechaInicio).getTime() <= new Date(fechaCierre).getTime()) {
@@ -1991,9 +2255,8 @@
         }
 
         const jObj = juegos.find(j => String(j.id) === String(torneoJuegoId));
-        const nuevo = {
-          id: Date.now(),
-          nombre: nombreTorneo,
+        const payload = {
+          nombre: nombreTorneo.trim(),
           juegoId: Number(torneoJuegoId),
           juegoNombre: jObj?.nombre || 'Juego Competitivo',
           cupoMaximo: Number(cupoMaximo),
@@ -2006,11 +2269,24 @@
           premioTotal: '$1,000,000 CLP'
         };
 
-        window.MockData.MOCK_TORNEOS.push(nuevo);
-        setTorneos([...torneos, nuevo]);
-        setNombreTorneo('');
-        setMensajeExito(`Torneo ${nuevo.nombre} creado con éxito.`);
-        setTimeout(() => setMensajeExito(''), 3000);
+        setCargando(true);
+        try {
+          let nuevo;
+          if (window.api) {
+            nuevo = await window.api.crearTorneo(payload);
+          } else {
+            nuevo = { id: Date.now(), ...payload };
+            window.MockData.MOCK_TORNEOS.push(nuevo);
+          }
+          setTorneos([...torneos, nuevo]);
+          setNombreTorneo('');
+          setMensajeExito(`Torneo ${nuevo.nombre} creado con éxito en tournament-service.`);
+          setTimeout(() => setMensajeExito(''), 3500);
+        } catch (err) {
+          alert(`Error al registrar torneo: ${err.message}`);
+        } finally {
+          setCargando(false);
+        }
       };
 
       return (
@@ -2032,7 +2308,7 @@
             {/* Mantenedor de Juegos */}
             <div className="col-lg-6">
               <div className="tarjeta h-100">
-                <h4 className="text-white mb-3"><i className="bi bi-controller me-2" style={{ color: 'var(--color-primario)' }}></i> Mantenedor de Juegos</h4>
+                <h4 className="text-white mb-3"><i className="bi bi-controller me-2" style={{ color: 'var(--color-primario)' }}></i> Mantenedor de Juegos (game-service)</h4>
                 <form onSubmit={handleCrearJuego} className="mb-4">
                   <div className="campo-formulario">
                     <label className="etiqueta-formulario">Nombre del Título</label>
@@ -2048,14 +2324,16 @@
                       <input type="number" min="1" max="10" className="control-formulario" value={minIntegrantes} onChange={(e) => setMinIntegrantes(e.target.value)} />
                     </div>
                   </div>
-                  <button type="submit" className="boton-primario w-100 py-2">Registrar Juego</button>
+                  <button type="submit" className="boton-primario w-100 py-2" disabled={cargando}>
+                    {cargando ? 'Guardando...' : 'Registrar Juego'}
+                  </button>
                 </form>
 
-                <h6 className="text-white mb-2">Juegos Habilitados:</h6>
-                <div className="d-flex flex-column gap-2">
+                <h6 className="text-white mb-2">Juegos Habilitados ({juegos.length}):</h6>
+                <div className="d-flex flex-column gap-2" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {juegos.map(j => (
                     <div key={j.id} className="p-2 rounded d-flex justify-content-between align-items-center" style={{ backgroundColor: '#120c22' }}>
-                      <span className="text-white">{j.nombre} ({j.minimoPorEquipo}v{j.minimoPorEquipo})</span>
+                      <span className="text-white">{j.nombre} ({j.minimoPorEquipo || 1}v{j.minimoPorEquipo || 1})</span>
                       <span className="badge bg-success">Activo</span>
                     </div>
                   ))}
@@ -2066,7 +2344,7 @@
             {/* Crear Torneo */}
             <div className="col-lg-6">
               <div className="tarjeta h-100">
-                <h4 className="text-white mb-3"><i className="bi bi-trophy-fill me-2" style={{ color: 'var(--color-acento)' }}></i> Crear y Configurar Torneo</h4>
+                <h4 className="text-white mb-3"><i className="bi bi-trophy-fill me-2" style={{ color: 'var(--color-acento)' }}></i> Crear Torneo (tournament-service)</h4>
                 <form onSubmit={handleCrearTorneo}>
                   <div className="campo-formulario">
                     <label className="etiqueta-formulario">Nombre del Torneo</label>
@@ -2097,8 +2375,8 @@
                     </div>
                   </div>
 
-                  <button type="submit" className="boton-primario w-100 py-2">
-                    Publicar Torneo Oficial
+                  <button type="submit" className="boton-primario w-100 py-2" disabled={cargando}>
+                    {cargando ? 'Publicando...' : 'Publicar Torneo Oficial'}
                   </button>
                 </form>
               </div>
@@ -2113,14 +2391,34 @@
       const [vistaActual, setVistaActual] = useState('inicio');
       const [torneoSeleccionadoId, setTorneoSeleccionadoId] = useState(1);
       const [usuario, setUsuario] = useState(null);
+      const [apiOnline, setApiOnline] = useState(false);
 
-      useEffect(() => {
-        // Cargar sesión persistente desde localStorage
-        if (window.AuthService) {
-          const user = window.AuthService.getCurrentUser();
-          if (user) setUsuario(user);
+      const checkBackendStatus = useCallback(async () => {
+        if (window.api) {
+          const isAlive = await window.api.checkHealth();
+          setApiOnline(!!isAlive);
         }
       }, []);
+
+      useEffect(() => {
+        let timer;
+        const inicializar = async () => {
+          let attempts = 0;
+          while (!window.api && attempts < 10) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+          }
+          if (window.AuthService) {
+            const user = window.AuthService.getCurrentUser();
+            if (user) setUsuario(user);
+          }
+          await checkBackendStatus();
+        };
+
+        inicializar();
+        timer = setInterval(checkBackendStatus, 3000);
+        return () => clearInterval(timer);
+      }, [checkBackendStatus]);
 
       const irAInscripcion = (id) => {
         setTorneoSeleccionadoId(id);
@@ -2134,6 +2432,8 @@
             setVistaActual={setVistaActual} 
             usuario={usuario} 
             setUsuario={setUsuario} 
+            apiOnline={apiOnline}
+            checkApiStatus={checkBackendStatus}
           />
 
           <main className="flex-grow-1">
