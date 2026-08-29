@@ -1,16 +1,42 @@
 # eSports Arena Manager
 
-Asignatura: Desarrollo FullStack I DSY1103  
-Institución:DuocUC  
-Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
+Asignatura: Desarrollo FullStack I / Frontend DSY1103  
+Institución: DuocUC  
+Arquitectura: Microservicios Spring Boot 3.2.5 + Java 21 + Frontend React 18 / HTML5
 
 ## Integrantes del equipo
 
 | Nombre          | Rol | GitHub |
 |-----------------|-----|--------|
-| _Anibal Romero_ | Backend Dev | @ItsTuki |
-| _Victor Guerra_ | Backend Dev | @jazinto-Flores |
-| _Maximo Lugo_   | Backend Dev | @Tynx006|
+| _Anibal Romero_ | FullStack Dev | @ItsTuki |
+| _Victor Guerra_ | FullStack Dev | @jazinto-Flores |
+| _Maximo Lugo_   | FullStack Dev | @Tynx006 |
+
+---
+
+## 🎮 Capa Frontend (EP1, EP2, EP3)
+
+El proyecto cuenta con una capa de presentación completa integrada que cubre las tres evaluaciones parciales:
+- **EP1:** Base web con HTML5 semántico, CSS3 externo (Paleta 1 Arena Púrpura `#9146FF`), validaciones JavaScript y catálogo dinámico por DOM (`frontend/ep1-base/index.html`).
+- **EP2:** Migración a React 18, componentes modulares con propiedades y estados (`TarjetaTorneo`, `TablaRanking`, `ListaPartidas`, `LlaveTorneo`, `FormularioInscripcion`), diseño responsivo con Bootstrap 5 (360px, 768px, 1280px), y suite de 10 pruebas unitarias con Jasmine/Karma (`frontend/tests/SpecRunner.html`).
+- **EP3:** Integración con el ecosistema de microservicios a través del **API Gateway (puerto 8070)**, autenticación con token JWT en cabecera `Authorization: Bearer`, persistencia en `localStorage`, control de acceso por roles (`ADMINISTRADOR`, `ORGANIZADOR`, `JUGADOR`, `VISITANTE`), y manejo de errores HTTP (400, 401, 403, 404, 500).
+
+### Vistas Disponibles en la Aplicación Frontend:
+1. **Inicio (`/`):** Torneos destacados, video oficial, métricas de arena y próximos cierres.
+2. **Listado de Torneos (`/torneos`):** Buscador, filtros por juego, estado y rango de fechas con estado vacío explícito.
+3. **Detalle de Torneo (`/torneos/:id`):** Llaves de eliminación (`LlaveTorneo`), tabla de posiciones (`TablaRanking`), calendario de partidas y asignación de premios.
+4. **Inscripción a Torneo (`/inscripcion`):** Formulario controlado con validación de plazo, cupo, jugadores mínimos del juego, duplicidad y sanciones activas.
+5. **Gestión de Equipos (`/equipos`):** Creación de escuadras con capitán y administración de plantilla de jugadores con roles tácticos.
+6. **Perfil de Jugador (`/perfil`):** Ficha técnica, apodo sin espacios (3-20 caracteres), historial y ratio de victorias/derrotas.
+7. **Autenticación (`/auth`):** Inicio de sesión con JWT y registro con mensajes diferenciados.
+8. **Panel del Organizador (`/organizador`):** Aprobación de inscripciones, registro/validación de resultados y aplicación de sanciones.
+9. **Panel de Administración (`/admin`):** Mantenedor CRUD de juegos, creación de torneos y configuración de premios.
+
+### Documentos Entregables del Caso Frontend:
+- [ERS - Especificación de Requerimientos de Software](ERS_eSports_Arena_Manager.md)
+- [Documento de Cobertura de Testing Unitario](Documento_Cobertura_Testing.md)
+- [Documento de Integración API y Microservicios](Documento_Integracion_API.md)
+- [Manual de Usuario por Rol](Manual_de_Usuario.md)
 
 ---
 
@@ -33,7 +59,6 @@ Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
 | `prize-service`      | 8090   | `db_prizes`        | 3306        |
 | `notification-service` | 8091 | `db_notifications` | 3306        |
 
-
 ## Documentación Swagger / OpenAPI
 
 Cada microservicio expone su documentación Swagger UI en la ruta `/doc/swagger-ui/index.html`.
@@ -53,184 +78,24 @@ Cada microservicio expone su documentación Swagger UI en la ruta `/doc/swagger-
 | `prize-service`      | `http://localhost:8090/doc/swagger-ui/index.html` |
 | `notification-service` | `http://localhost:8091/doc/swagger-ui/index.html` |
 
-También queda disponible el JSON OpenAPI en `/v3/api-docs` dentro de cada microservicio.
-
-## API Gateway, Eureka y HATEOAS
-
-El proyecto incorpora un servidor Eureka para descubrimiento de servicios y un API Gateway como punto unico de entrada.
-
-| Componente | URL |
-|------------|-----|
-| Eureka Dashboard | `http://localhost:8761` |
-| API Gateway | `http://localhost:8070` |
-
-Las rutas publicas del Gateway mantienen los mismos paths `/api/v1` de cada microservicio. Ejemplos:
-
-```text
-http://localhost:8070/api/v1/usuarios
-http://localhost:8070/api/v1/equipos
-http://localhost:8070/api/v1/torneos
-http://localhost:8070/api/v1/inscripciones
-```
-
-Cada microservicio tambien agrega enlaces HATEOAS en la cabecera HTTP `Link` para las rutas `/api/v1/**`, sin cambiar el JSON de respuesta. Esto permite mantener compatibilidad con Feign y Postman.
-
-## Instrucciones de ejecución
-
-### Requisito de base de datos local
-
-Para probar el proyecto localmente se usa **XAMPP** con el servicio **MySQL/MariaDB** activo.
-
-Configuración esperada por defecto:
-
-```text
-Host: localhost
-Puerto MySQL: 3306
-Usuario: root
-Contraseña: vacía
-```
-
-Cada microservicio mantiene su propia base de datos independiente, pero todas usan el mismo servidor MySQL de XAMPP en el puerto `3306`.
-
-Las bases son:
-
-```text
-db_auth
-db_users
-db_teams
-db_games
-db_tournaments
-db_registration
-db_sanctions
-db_matches
-db_results
-db_rankings
-db_prizes
-db_notifications
-```
-
-Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos.
-
-### Ejecución de microservicios
-
-1. Abrir XAMPP.
-2. Iniciar el servicio **MySQL**.
-3. Ejecutar primero el servidor Eureka.
-
-En Windows, usar el wrapper Maven incluido desde la raíz del proyecto:
-
-```bash
-cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
-.\mvnw.cmd -pl discovery-server spring-boot:run
-```
-
-4. Ejecutar cada microservicio desde su carpeta:
-
-```bash
-mvn spring-boot:run
-```
-
-5. Orden recomendado de ejecución:
-
-```text
-discovery-server
-user-service
-auth-service
-game-service
-tournament-service
-team-service
-sanction-service
-registration-service
-match-service
-result-service
-ranking-service
-prize-service
-notification-service
-api-gateway
-```
-
-6. Ejecutar el Gateway al final.
-
-En Windows, usar:
-
-```bash
-cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
-.\mvnw.cmd -pl api-gateway spring-boot:run
-```
-
-7. Probar los flujos principales con la colección de postman(collecion de postman.txt), usando `http://localhost:8070` si se quiere probar por Gateway.
-
-
-
-## Endpoints principales por microservicio
-
-### auth-service (8080)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/auth/registro` | Crear cuenta |
-| POST | `/api/v1/auth/login` | Login → JWT |
-| POST | `/api/v1/auth/validar-token` | Validar JWT (para Gateway) |
-| GET  | `/api/v1/auth/cuentas` | Listar cuentas |
-| PUT  | `/api/v1/auth/cuentas/{id}` | Actualizar rol/estado/password |
-| DELETE | `/api/v1/auth/cuentas/{id}/desactivar` | Desactivar cuenta |
-
-### user-service (8081)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/usuarios` | Crear usuario |
-| GET  | `/api/v1/usuarios?rol=JUGADOR` | Listar por rol |
-| GET  | `/api/v1/usuarios/{id}` | Buscar por ID |
-| PUT  | `/api/v1/usuarios/{id}` | Actualizar |
-| DELETE | `/api/v1/usuarios/{id}/desactivar` | Desactivar |
-
-### team-service (8082)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/equipos` | Crear equipo (capitán auto-añadido) |
-| GET  | `/api/v1/equipos?estado=ACTIVO` | Listar |
-| GET  | `/api/v1/equipos/{id}` | Buscar con miembros |
-| POST | `/api/v1/equipos/{id}/miembros` | Agregar miembro |
-| DELETE | `/api/v1/equipos/{id}/desactivar` | Desactivar |
-
-### tournament-service (8083)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/torneos` | Crear torneo |
-| GET  | `/api/v1/torneos?estado=ABIERTO` | Listar por estado |
-| PATCH | `/api/v1/torneos/{id}/estado?nuevoEstado=EN_CURSO` | Cambiar estado |
-| DELETE | `/api/v1/torneos/{id}/cancelar` | Cancelar |
-
-### registration-service (8084)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/inscripciones` | Inscribir (valida todo) |
-| GET  | `/api/v1/inscripciones/torneo/{torneoId}` | Por torneo |
-| PATCH | `/api/v1/inscripciones/{id}/estado` | Cambiar estado |
-| DELETE | `/api/v1/inscripciones/{id}/cancelar` | Cancelar |
-
-### match-service (8086)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/partidas` | Crear partida |
-| GET  | `/api/v1/partidas?torneoId=1&estado=PROGRAMADA` | Listar con filtros |
-| PATCH | `/api/v1/partidas/{id}` | Actualizar estado/horario |
-| DELETE | `/api/v1/partidas/{id}/cancelar` | Cancelar |
-
-### game-service (8087)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/juegos` | Crear juego |
-| GET  | `/api/v1/juegos` | Listar activos |
-| GET  | `/api/v1/juegos?todos=true` | Listar todos |
-| DELETE | `/api/v1/juegos/{id}/desactivar` | Desactivar |
-
 ---
 
-## Evidencias requeridas
+## Instrucciones de Ejecución
 
-- [x] Repositorio GitHub organizado por microservicios
-- [x] `README.md` con puertos y endpoints
-- [x] Colección Postman exportada 
-- [x] Diagrama de ecosistema 
-- [ ] Tablero Trello con tareas distribuidas
+### 1. Ejecutar el Frontend
+Abrir directamente en el navegador:
+- **Aplicación React (SPA):** `frontend/index.html`
+- **Suite de Pruebas Jasmine (EP2):** `frontend/tests/SpecRunner.html`
+- **Base HTML5/CSS3/JS (EP1):** `frontend/ep1-base/index.html`
 
+### 2. Ejecutar los Microservicios
+1. Iniciar el servicio **MySQL** en XAMPP (puerto 3306).
+2. Iniciar Eureka Server:
+   ```bash
+   .\mvnw.cmd -pl discovery-server spring-boot:run
+   ```
+3. Iniciar los microservicios (`auth-service`, `user-service`, etc.).
+4. Iniciar el API Gateway:
+   ```bash
+   .\mvnw.cmd -pl api-gateway spring-boot:run
+   ```

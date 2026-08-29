@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Inscripción (EP1)</title>
+  <link rel="stylesheet" href="css/ep1-styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>eSports</span> Arena</a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="torneos.html">Torneos</a></li>
+        <li><a href="inscripcion.html" class="activo">Inscripción</a></li>
+        <li><a href="equipo.html">Equipos</a></li>
+        <li><a href="perfil.html">Perfil</a></li>
+        <li><a href="../index.html" style="color:var(--color-acento)">⚡ App React (EP2/EP3)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main style="max-width: 600px;">
+    <section class="tarjeta">
+      <h1 style="margin-bottom: 0.5rem;">Formulario de Inscripción</h1>
+      <p style="color: var(--color-texto-mutado); margin-bottom: 1.5rem;">Validaciones nativas en JavaScript con mensajes personalizados.</p>
+
+      <form id="form-inscripcion-ep1" novalidate>
+        <div class="campo-formulario">
+          <label for="torneo-seleccionado">Torneo Destino:</label>
+          <select id="torneo-seleccionado" name="torneo">
+            <option value="1">Supercopa Valorant 2026</option>
+            <option value="2">Circuito de Leyendas LoL</option>
+          </select>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="nombre-equipo">Nombre del Equipo:</label>
+          <input type="text" id="nombre-equipo" name="nombreEquipo" placeholder="Ej: Nova Esports">
+          <div id="error-equipo" class="mensaje-error"></div>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="email-capitan">Correo del Capitán:</label>
+          <input type="email" id="email-capitan" name="emailCapitan" placeholder="capitan@arena.com">
+          <div id="error-email" class="mensaje-error"></div>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="num-jugadores">Cantidad de Integrantes:</label>
+          <input type="number" id="num-jugadores" name="numJugadores" min="1" max="10" value="5">
+          <div id="error-jugadores" class="mensaje-error"></div>
+        </div>
+
+        <button type="submit" class="boton-primario" style="width: 100%;">Enviar Inscripción (Validar)</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 eSports Arena Manager - DuocUC | Evaluación Parcial 1 (EP1)</p>
+  </footer>
+
+  <script src="js/ep1-validations.js"></script>
+</body>
+</html>

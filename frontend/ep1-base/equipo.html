@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Gestión de Equipos (EP1)</title>
+  <link rel="stylesheet" href="css/ep1-styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>eSports</span> Arena</a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="torneos.html">Torneos</a></li>
+        <li><a href="inscripcion.html">Inscripción</a></li>
+        <li><a href="equipo.html" class="activo">Equipos</a></li>
+        <li><a href="perfil.html">Perfil</a></li>
+        <li><a href="../index.html" style="color:var(--color-acento)">⚡ App React (EP2/EP3)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1 style="margin-bottom: 0.5rem;">Gestión de Equipos</h1>
+    <p style="color: var(--color-texto-mutado); margin-bottom: 2rem;">Administración de escuadras y plantilla de integrantes.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <section class="tarjeta">
+        <h2>Crear Equipo</h2>
+        <form style="margin-top: 1rem;">
+          <div class="campo-formulario">
+            <label for="eq-nombre">Nombre del Equipo:</label>
+            <input type="text" id="eq-nombre" placeholder="Nombre único">
+          </div>
+          <div class="campo-formulario">
+            <label for="eq-juego">Juego Principal:</label>
+            <select id="eq-juego">
+              <option>Valorant Masters (5v5)</option>
+              <option>League of Legends (5v5)</option>
+              <option>Rocket League (3v3)</option>
+            </select>
+          </div>
+          <button type="button" class="boton-primario" onclick="alert('Equipo registrado correctamente (Simulación EP1)');">Guardar Equipo</button>
+        </form>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Escuadra Activa: Nova Esports</h2>
+        <p style="color: var(--color-texto-mutado); font-size: 14px;">Capitán: <strong>ItsTuki</strong></p>
+        <ul style="list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li style="background: #120c22; padding: 0.5rem 1rem; border-radius: 4px;">👑 ItsTuki (Capitán / Duelista)</li>
+          <li style="background: #120c22; padding: 0.5rem 1rem; border-radius: 4px;">🎯 Jazinto (Iniciador)</li>
+          <li style="background: #120c22; padding: 0.5rem 1rem; border-radius: 4px;">🛡️ Tynx (Controlador)</li>
+          <li style="background: #120c22; padding: 0.5rem 1rem; border-radius: 4px;">⚡ Shadow (Centinela)</li>
+          <li style="background: #120c22; padding: 0.5rem 1rem; border-radius: 4px;">🔥 Viper99 (Flex)</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 eSports Arena Manager - DuocUC | Evaluación Parcial 1 (EP1)</p>
+  </footer>
+</body>
+</html>

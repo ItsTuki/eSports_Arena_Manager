@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Perfil de Jugador (EP1)</title>
+  <link rel="stylesheet" href="css/ep1-styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>eSports</span> Arena</a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="torneos.html">Torneos</a></li>
+        <li><a href="inscripcion.html">Inscripción</a></li>
+        <li><a href="equipo.html">Equipos</a></li>
+        <li><a href="perfil.html" class="activo">Perfil</a></li>
+        <li><a href="../index.html" style="color:var(--color-acento)">⚡ App React (EP2/EP3)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1 style="margin-bottom: 0.5rem;">Perfil de Jugador Competitivo</h1>
+    <p style="color: var(--color-texto-mutado); margin-bottom: 2rem;">Ficha técnica y estadísticas individuales.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <section class="tarjeta">
+        <h2>Datos del Jugador</h2>
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+          <div><label>Apodo:</label> <input type="text" value="ItsTuki" readonly></div>
+          <div><label>Correo:</label> <input type="email" value="anibal.romero@arena.com" readonly></div>
+          <div><label>Rol:</label> <input type="text" value="JUGADOR" readonly></div>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Estadísticas en Arena</h2>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <div style="background: #120c22; padding: 1rem; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #00F5D4;">28</div>
+            <div style="font-size: 12px; color: var(--color-texto-mutado);">Victorias</div>
+          </div>
+          <div style="background: #120c22; padding: 1rem; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #FF5C7A;">9</div>
+            <div style="font-size: 12px; color: var(--color-texto-mutado);">Derrotas</div>
+          </div>
+          <div style="background: #120c22; padding: 1rem; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #FFB703;">75.6%</div>
+            <div style="font-size: 12px; color: var(--color-texto-mutado);">Winrate</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 eSports Arena Manager - DuocUC | Evaluación Parcial 1 (EP1)</p>
+  </footer>
+</body>
+</html>

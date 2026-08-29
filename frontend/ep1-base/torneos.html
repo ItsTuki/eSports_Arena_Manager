@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Torneos (EP1)</title>
+  <link rel="stylesheet" href="css/ep1-styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>eSports</span> Arena</a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="torneos.html" class="activo">Torneos</a></li>
+        <li><a href="inscripcion.html">Inscripción</a></li>
+        <li><a href="equipo.html">Equipos</a></li>
+        <li><a href="perfil.html">Perfil</a></li>
+        <li><a href="../index.html" style="color:var(--color-acento)">⚡ App React (EP2/EP3)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1 style="margin-bottom: 0.5rem;">Catálogo de Torneos</h1>
+    <p style="color: var(--color-texto-mutado); margin-bottom: 2rem;">Explora los torneos generados mediante manipulación dinámica del DOM.</p>
+
+    <div id="catalogo-torneos" class="grilla-tarjetas"></div>
+  </main>
+
+  <footer>
+    <p>© 2026 eSports Arena Manager - DuocUC | Evaluación Parcial 1 (EP1)</p>
+  </footer>
+
+  <script src="js/ep1-data.js"></script>
+  <script>
+    renderizarTorneos("catalogo-torneos");
+  </script>
+</body>
+</html>

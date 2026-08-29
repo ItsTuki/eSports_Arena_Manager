@@ -1,0 +1,188 @@
+/* Hoja de Estilos Externa - Evaluacion Parcial 1 (EP1) */
+/* Paleta 1: Arena Purpura (Fondo: #0E0B16, Superficie: #1C1430, Primario: #9146FF, Acento: #00F5D4, Texto: #F1ECFF, Error: #FF5C7A) */
+
+:root {
+  --color-fondo: #0E0B16;
+  --color-superficie: #1C1430;
+  --color-superficie-hover: #261b40;
+  --color-superficie-borde: #332356;
+  --color-primario: #9146FF;
+  --color-primario-hover: #7b2cf7;
+  --color-acento: #00F5D4;
+  --color-acento-hover: #00d2b6;
+  --color-texto: #F1ECFF;
+  --color-texto-mutado: #a89bc4;
+  --color-error: #FF5C7A;
+  --radio-borde: 8px;
+  --fuente-principal: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente-principal);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background-color: var(--color-superficie);
+  border-bottom: 1px solid var(--color-superficie-borde);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--color-primario);
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+}
+
+nav a {
+  color: var(--color-texto);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+nav a:hover, nav a.activo {
+  color: var(--color-acento);
+}
+
+main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.tarjeta {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-superficie-borde);
+  border-radius: var(--radio-borde);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.grilla-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.boton-primario {
+  background-color: var(--color-primario);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radio-borde);
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.boton-primario:hover {
+  background-color: var(--color-primario-hover);
+}
+
+.boton-secundario {
+  background-color: transparent;
+  color: var(--color-texto);
+  border: 1px solid var(--color-superficie-borde);
+  font-size: 15px;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radio-borde);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.boton-secundario:hover {
+  background-color: var(--color-superficie-hover);
+}
+
+.campo-formulario {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  font-size: 14px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #120c22;
+  border: 1px solid var(--color-superficie-borde);
+  border-radius: var(--radio-borde);
+  color: var(--color-texto);
+  font-size: 15px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.mensaje-error {
+  color: var(--color-error);
+  font-size: 13px;
+  margin-top: 0.35rem;
+  display: none;
+}
+
+.mensaje-error.visible {
+  display: block;
+}
+
+.insignia {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.insignia-abierto {
+  background-color: rgba(0, 245, 212, 0.15);
+  color: var(--color-acento);
+}
+
+footer {
+  background-color: #08060d;
+  border-top: 1px solid var(--color-superficie-borde);
+  padding: 2rem;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-texto-mutado);
+}

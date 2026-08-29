@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Jasmine Spec Runner - eSports Arena Manager (EP2)</title>
+  <link rel="shortcut icon" type="image/png" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine_favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body {
+      background-color: #0E0B16 !important;
+      color: #F1ECFF !important;
+      padding: 20px;
+    }
+    .jasmine_html-reporter {
+      background-color: #1C1430 !important;
+      border: 1px solid #332356;
+      border-radius: 10px;
+      padding: 15px;
+      color: #F1ECFF !important;
+    }
+    .jasmine_html-reporter a {
+      color: #00F5D4 !important;
+    }
+    .jasmine-banner {
+      background-color: #9146FF !important;
+      border-radius: 8px;
+    }
+    .header-panel {
+      margin-bottom: 20px;
+      padding: 15px 20px;
+      background: #1C1430;
+      border: 1px solid #9146FF;
+      border-radius: 8px;
+    }
+    .header-panel h1 {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      color: #00F5D4;
+    }
+  </style>
+
+  <!-- Jasmine Core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine-html.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/boot0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/boot1.min.js"></script>
+
+  <!-- Código fuente a testear -->
+  <script src="../js/tournamentUtils.js" type="module"></script>
+  <script src="../js/validationUtils.js" type="module"></script>
+  <script src="../js/mockData.js" type="module"></script>
+
+  <!-- Fallback global si no se cargó con ES modules -->
+  <script>
+    if (!window.TournamentUtils) {
+      window.TournamentUtils = {
+        ordenarRanking: (list) => [...list].sort((a, b) => (b.puntos !== a.puntos) ? b.puntos - a.puntos : (b.diferenciaPuntaje || 0) - (a.diferenciaPuntaje || 0)),
+        calcularPuntos: (res, v = 3, d = 0, e = 1) => res.reduce((acc, curr) => acc + (curr.victoria ? v : (curr.empate ? e : d)), 0),
+        cuposDisponibles: (max, inc) => Math.max(0, (max || 0) - (inc || 0)),
+        inscripcionFueraDePlazo: (fc, fa = new Date()) => new Date(fa).getTime() > new Date(fc).getTime(),
+        tieneSancionActiva: (sanc = [], fa = new Date()) => sanc.some(s => s.activa === true || (s.fechaFin && new Date(s.fechaFin).getTime() >= new Date(fa).getTime())),
+        equipoCompleto: (eq, j) => ((eq?.miembros?.length || eq?.cantidadMiembros || 0) >= (j?.minimoPorEquipo || 1))
+      };
+    }
+  </script>
+
+  <!-- Suites de Pruebas -->
+  <script src="specs/tournamentUtils.spec.js"></script>
+  <script src="specs/components.spec.js"></script>
+</head>
+<body>
+  <div class="header-panel">
+    <h1>⚔️ eSports Arena Manager - Suite Oficial de Pruebas EP2</h1>
+    <p>10 Pruebas Unitarias Obligatorias ejecutadas con Jasmine & Karma | Cobertura de lógica y componentes.</p>
+    <a href="../index.html" class="boton-acento" style="font-size: 13px; text-decoration: none; padding: 6px 12px; display: inline-block; margin-top: 5px;">
+      ⬅ Volver a la Aplicación Principal
+    </a>
+  </div>
+</body>
+</html>

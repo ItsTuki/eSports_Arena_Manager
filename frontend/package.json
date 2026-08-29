@@ -1,0 +1,39 @@
+{
+  "name": "esports-arena-manager-frontend",
+  "version": "3.0.0",
+  "description": "Frontend de eSports Arena Manager - Integración EP1, EP2 y EP3 con Microservicios Spring Boot",
+  "main": "index.html",
+  "scripts": {
+    "test": "karma start karma.conf.js --single-run",
+    "test:watch": "karma start karma.conf.js",
+    "start": "npx serve . -l 3000"
+  },
+  "keywords": [
+    "esports",
+    "react",
+    "jasmine",
+    "karma",
+    "microservices",
+    "duoc"
+  ],
+  "author": "eSports Arena Manager Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0",
+    "babel-loader": "^9.1.3",
+    "jasmine-core": "^5.1.1",
+    "karma": "^6.4.2",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-webpack": "^5.0.0",
+    "webpack": "^5.90.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Plataforma Competitiva</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Paleta 1 (Arena Púrpura) CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- React 18 & Babel para componentes React -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Scripts con Lógica de Negocio y Conectividad -->
+  <script src="js/tournamentUtils.js" type="module"></script>
+  <script src="js/validationUtils.js" type="module"></script>
+  <script src="js/mockData.js" type="module"></script>
+  <script src="js/authService.js" type="module"></script>
+  <script src="js/api.js" type="module"></script>
+
+  <!-- Aplicación Principal React -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    // --- REGLAS DE NEGOCIO Y UTILIDADES DE FALLBACK ---
+    const tournamentUtils = window.TournamentUtils || {
+      ordenarRanking: (list) => [...list].sort((a, b) => (b.puntos !== a.puntos) ? b.puntos - a.puntos : (b.diferenciaPuntaje || 0) - (a.diferenciaPuntaje || 0)),
+      calcularPuntos: (res, v = 3, d = 0, e = 1) => res.reduce((acc, curr) => acc + (curr.victoria ? v : (curr.empate ? e : d)), 0),
+      cuposDisponibles: (max, inc) => Math.max(0, (max || 0) - (inc || 0)),
+      inscripcionFueraDePlazo: (fc, fa = new Date()) => new Date(fa).getTime() > new Date(fc).getTime(),
+      tieneSancionActiva: (sanc = [], fa = new Date()) => sanc.some(s => s.activa === true || (s.fechaFin && new Date(s.fechaFin).getTime() >= new Date(fa).getTime())),
+      equipoCompleto: (eq, j) => ((eq?.miembros?.length || eq?.cantidadMiembros || 0) >= (j?.minimoPorEquipo || 1))
+    };
+
+    const validationUtils = window.ValidationUtils || {
+      validarApodo: (a) => (!a || !a.trim()) ? { valido: false, mensaje: 'Apodo requerido' } : (/\s/.test(a)) ? { valido: false, mensaje: 'Sin espacios' } : (a.length < 3 || a.length > 20) ? { valido: false, mensaje: '3-20 caracteres' } : { valido: true, mensaje: '' },
+      validarEmail: (e) => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) ? { valido: true, mensaje: '' } : { valido: false, mensaje: 'Correo inválido' },
+      validarPassword: (p) => (p && p.length >= 6) ? { valido: true, mensaje: '' } : { valido: false, mensaje: 'Mínimo 6 caracteres' },
+      validarRangoFechas: (i, f) => new Date(i).getTime() <= new Date(f).getTime() ? { valido: true, mensaje: '' } : { valido: false, mensaje: 'Fecha inicio debe ser menor o igual a fecha fin' }
+    };
+
+    // --- COMPONENTE CABECERA ---
+    function Cabecera({ vistaActual, setVistaActual, usuario, setUsuario, apiOnline, toggleApiMode }) {
+      const handleLogout = () => {
+        if (window.AuthService) window.AuthService.logout();
+        setUsuario(null);
+        setVistaActual('inicio');
+      };
+
+      const quickSetRole = (rol) => {
+        let userObj = { id: 3, nombre: 'Anibal Romero', email: 'jugador@arena.com', apodo: 'ItsTuki', rol: 'JUGADOR' };
+        if (rol === 'ADMINISTRADOR') {
+          userObj = { id: 1, nombre: 'Admin Master', email: 'admin@arena.com', apodo: 'GrandMaster', rol: 'ADMINISTRADOR' };
+        } else if (rol === 'ORGANIZADOR') {
+          userObj = { id: 2, nombre: 'Organizador Pro', email: 'organizador@arena.com', apodo: 'RefOfficial', rol: 'ORGANIZADOR' };
+        } else if (rol === 'VISITANTE') {
+          userObj = null;
+        }
+        if (window.AuthService && userObj) {
+          window.AuthService.saveSession(`token-${rol.toLowerCase()}`, userObj);
+        } else if (window.AuthService) {
+          window.AuthService.logout();
+        }
+        setUsuario(userObj);
+      };
+
+      return (
+        <header className="cabecera-principal">
+          <nav className="navbar navbar-expand-lg navbar-dark container py-2">
+            <a className="navbar-brand navbar-brand-custom" href="#inicio" onClick={(e) => { e.preventDefault(); setVistaActual('inicio'); }}>
+              <i className="bi bi-controller text-primary-custom" style={{ color: 'var(--color-primario)', fontSize: '1.6rem' }}></i>
+              <span>eSports</span> Arena
+            </a>
+
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+
+            <div className="collapse navbar-collapse" id="navbarContenido">
+              <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+                <li className="nav-item">
+                  <a className={`nav-link nav-link-custom ${vistaActual === 'inicio' ? 'activo' : ''}`} href="#inicio" onClick={(e) => { e.preventDefault(); setVistaActual('inicio'); }}>
+                    <i className="bi bi-house-door me-1"></i> Inicio
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a className={`nav-link nav-link-custom ${vistaActual === 'torneos' ? 'activo' : ''}`} href="#torneos" onClick={(e) => { e.preventDefault(); setVistaActual('torneos'); }}>
+                    <i className="bi bi-trophy me-1"></i> Torneos
+                  </a>
+                </li>
+                {usuario && (
+                  <>
+                    <li className="nav-item">
+                      <a className={`nav-link nav-link-custom ${vistaActual === 'equipos' ? 'activo' : ''}`} href="#equipos" onClick={(e) => { e.preventDefault(); setVistaActual('equipos'); }}>
+                        <i className="bi bi-people me-1"></i> Mis Equipos
+                      </a>
+                    </li>
+                    <li className="nav-item">
+                      <a className={`nav-link nav-link-custom ${vistaActual === 'perfil' ? 'activo' : ''}`} href="#perfil" onClick={(e) => { e.preventDefault(); setVistaActual('perfil'); }}>
+                        <i className="bi bi-person-badge me-1"></i> Mi Perfil
+                      </a>
+                    </li>
+                  </>
+                )}
+                {(usuario?.rol === 'ORGANIZADOR' || usuario?.rol === 'ADMINISTRADOR') && (
+                  <li className="nav-item">
+                    <a className={`nav-link nav-link-custom ${vistaActual === 'organizador' ? 'activo' : ''}`} href="#organizador" onClick={(e) => { e.preventDefault(); setVistaActual('organizador'); }} style={{ color: 'var(--color-acento)' }}>
+                      <i className="bi bi-speedometer2 me-1"></i> Panel Organizador
+                    </a>
+                  </li>
+                )}
+                {usuario?.rol === 'ADMINISTRADOR' && (
+                  <li className="nav-item">
+                    <a className={`nav-link nav-link-custom ${vistaActual === 'admin' ? 'activo' : ''}`} href="#admin" onClick={(e) => { e.preventDefault(); setVistaActual('admin'); }} style={{ color: '#FFB703' }}>
+                      <i className="bi bi-shield-lock me-1"></i> Panel Admin
+                    </a>
+                  </li>
+                )}
+              </ul>
+
+              <div className="d-flex align-items-center gap-3 flex-wrap">
+                {/* Selector rápido de rol para defensa / simulación EP1/EP2/EP3 */}
+                <div className="dropdown">
+                  <button className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" style={{ fontSize: '12px', borderColor: 'var(--color-superficie-borde)' }}>
+                    <i className="bi bi-person-gear"></i> Rol Simulado: <strong>{usuario ? usuario.rol : 'VISITANTE'}</strong>
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                    <li><h6 className="dropdown-header">Cambiar Rol (Defensa EP1/EP2/EP3)</h6></li>
+                    <li><button className="dropdown-item" onClick={() => quickSetRole('ADMINISTRADOR')}><i className="bi bi-shield-fill text-warning me-2"></i> Administrador</button></li>
+                    <li><button className="dropdown-item" onClick={() => quickSetRole('ORGANIZADOR')}><i className="bi bi-award-fill text-info me-2"></i> Organizador</button></li>
+                    <li><button className="dropdown-item" onClick={() => quickSetRole('JUGADOR')}><i className="bi bi-person-fill text-primary me-2"></i> Jugador (@ItsTuki)</button></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item" onClick={() => quickSetRole('VISITANTE')}><i className="bi bi-eye text-muted me-2"></i> Visitante (Sin sesión)</button></li>
+                  </ul>
+                </div>
+
+                {/* Enlace a Pruebas Jasmine EP2 */}
+                <a href="tests/SpecRunner.html" target="_blank" className="btn btn-sm btn-outline-info d-flex align-items-center gap-1" style={{ fontSize: '12px' }} title="Ejecutar suite de 10 pruebas unitarias con Jasmine">
+                  <i className="bi bi-check2-circle"></i> Tests Jasmine (EP2)
+                </a>
+
+                {/* Enlace a Base EP1 */}
+                <a href="ep1-base/index.html" target="_blank" className="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style={{ fontSize: '12px' }} title="Ver base HTML5/CSS3/JS de EP1">
+                  <i className="bi bi-filetype-html"></i> Base EP1
+                </a>
+
+                {/* Autenticación Real EP3 */}
+                {usuario ? (
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="insignia insignia-rol">
+                      <i className="bi bi-person-circle"></i> {usuario.apodo || usuario.nombre}
+                    </span>
+                    <button className="btn btn-sm btn-danger-custom" onClick={handleLogout} title="Cerrar Sesión">
+                      <i className="bi bi-box-arrow-right"></i> Salir
+                    </button>
+                  </div>
+                ) : (
+                  <button className="boton-primario py-1 px-3" style={{ fontSize: '14px' }} onClick={() => setVistaActual('auth')}>
+                    <i className="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                  </button>
+                )}
+              </div>
+            </div>
+          </nav>
+        </header>
+      );
+    }
+
+    // --- COMPONENTE PIE DE PAGINA ---
+    function PieDePagina() {
+      return (
+        <footer className="pie-pagina">
+          <div className="container">
+            <div className="row g-4">
+              <div className="col-md-4">
+                <h5 className="text-white mb-3 d-flex align-items-center gap-2">
+                  <i className="bi bi-controller" style={{ color: 'var(--color-primario)' }}></i> eSports Arena Manager
+                </h5>
+                <p className="small">Plataforma web integral para gestión de torneos competitivos, llaves, rankings y ecosistema de microservicios Spring Boot.</p>
+                <div className="small text-muted">
+                  <span>DuocUC - Asignatura Desarrollo FullStack</span>
+                </div>
+              </div>
+              <div className="col-md-4">
+                <h6 className="text-white mb-3">Microservicios y Conectividad (EP3)</h6>
+                <ul className="list-unstyled small d-flex flex-column gap-1">
+                  <li><i className="bi bi-hdd-network text-success me-1"></i> API Gateway: <code>http://localhost:8070</code></li>
+                  <li><i className="bi bi-broadcast text-info me-1"></i> Eureka Discovery: <code>http://localhost:8761</code></li>
+                  <li><i className="bi bi-file-code text-warning me-1"></i> Swagger UI: <code>/doc/swagger-ui/index.html</code></li>
+                </ul>
+              </div>
+              <div className="col-md-4">
+                <h6 className="text-white mb-3">Equipo Desarrollador</h6>
+                <ul className="list-unstyled small d-flex flex-column gap-1">
+                  <li><i className="bi bi-github me-1"></i> Anibal Romero (<strong>@ItsTuki</strong>)</li>
+                  <li><i className="bi bi-github me-1"></i> Victor Guerra (<strong>@jazinto-Flores</strong>)</li>
+                  <li><i className="bi bi-github me-1"></i> Maximo Lugo (<strong>@Tynx006</strong>)</li>
+                </ul>
+              </div>
+            </div>
+            <hr style={{ borderColor: 'var(--color-superficie-borde)' }} />
+            <div className="d-flex justify-content-between align-items-center flex-wrap small">
+              <div>© 2026 eSports Arena Manager. Todos los derechos reservados.</div>
+              <div className="d-flex gap-3">
+                <span className="text-muted">Paleta: <strong>Arena Púrpura (#9146FF)</strong></span>
+                <span className="text-muted">Etapa: <strong>EP1 + EP2 + EP3 Integrada</strong></span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    // --- COMPONENTE TARJETA TORNEO ---
+    function TarjetaTorneo({ torneo, onVerDetalle, onInscribir, usuario }) {
+      const getInsigniaEstado = (estado) => {
+        if (estado === 'ABIERTO') return <span className="insignia insignia-abierto"><i className="bi bi-unlock-fill"></i> Abierto</span>;
+        if (estado === 'EN_CURSO') return <span className="insignia insignia-en-curso"><i className="bi bi-play-circle-fill"></i> En Curso</span>;
+        return <span className="insignia insignia-finalizado"><i className="bi bi-flag-fill"></i> Finalizado</span>;
+      };
+
+      const cuposRestantes = tournamentUtils.cuposDisponibles(torneo.cupoMaximo, torneo.cuposOcupados);
+      const fueraPlazo = tournamentUtils.inscripcionFueraDePlazo(torneo.fechaCierreInscripcion);
+
+      return (
+        <article className="tarjeta h-100 d-flex flex-direction-column justify-content-between">
+          <div>
+            <div className="d-flex justify-content-between align-items-start mb-2">
+              <span className="badge" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff', border: '1px solid rgba(145, 70, 255, 0.4)' }}>
+                <i className="bi bi-controller me-1"></i> {torneo.juegoNombre || `Juego #${torneo.juegoId}`}
+              </span>
+              {getInsigniaEstado(torneo.estado)}
+            </div>
+
+            <h4 className="torneo-nombre mb-2" style={{ fontSize: '1.2rem', color: '#FFFFFF' }}>{torneo.nombre}</h4>
+            <p className="text-muted small mb-3">{torneo.descripcion || 'Torneo oficial del circuito competitivo.'}</p>
+
+            <div className="p-2 rounded mb-3" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)', fontSize: '13px' }}>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted"><i className="bi bi-people-fill me-1"></i> Cupos Disponibles:</span>
+                <strong>{cuposRestantes} de {torneo.cupoMaximo}</strong>
+              </div>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted"><i className="bi bi-calendar-event me-1"></i> Cierre Inscripción:</span>
+                <span className={fueraPlazo ? 'text-danger' : ''}>
+                  {new Date(torneo.fechaCierreInscripcion).toLocaleDateString()}
+                </span>
+              </div>
+              {torneo.premioTotal && (
+                <div className="d-flex justify-content-between">
+                  <span className="text-muted"><i className="bi bi-cash-stack me-1"></i> Bolsa Premios:</span>
+                  <strong style={{ color: 'var(--color-acento)' }}>{torneo.premioTotal}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="d-flex gap-2 mt-2">
+            <button className="boton-secundario flex-grow-1 py-2" onClick={() => onVerDetalle(torneo.id)}>
+              <i className="bi bi-eye"></i> Ver Detalle
+            </button>
+            {torneo.estado === 'ABIERTO' && !fueraPlazo && cuposRestantes > 0 && (
+              <button className="boton-primario py-2 px-3" onClick={() => onInscribir(torneo.id)}>
+                <i className="bi bi-pencil-square"></i> Inscribirse
+              </button>
+            )}
+          </div>
+        </article>
+      );
+    }
+
+    // --- COMPONENTE TABLA RANKING ---
+    function TablaRanking({ ranking = [] }) {
+      const rankingOrdenado = useMemo(() => tournamentUtils.ordenarRanking(ranking), [ranking]);
+
+      if (!rankingOrdenado || rankingOrdenado.length === 0) {
+        return (
+          <div className="text-center p-4 text-muted">
+            <i className="bi bi-trophy display-6 d-block mb-2" style={{ opacity: 0.4 }}></i>
+            No hay estadísticas ni posiciones registradas para este torneo aún.
+          </div>
+        );
+      }
+
+      return (
+        <div className="table-responsive">
+          <table className="tabla-esports">
+            <thead>
+              <tr>
+                <th style={{ width: '60px' }}>Pos</th>
+                <th>Participante / Equipo</th>
+                <th className="text-center">PJ</th>
+                <th className="text-center">PG</th>
+                <th className="text-center">PP</th>
+                <th className="text-center">DIF</th>
+                <th className="text-center" style={{ color: 'var(--color-acento)' }}>PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rankingOrdenado.map((row, idx) => {
+                const esPrimero = idx === 0;
+                return (
+                  <tr key={row.id || idx} className={esPrimero ? 'primer-lugar' : ''}>
+                    <td>
+                      {esPrimero ? (
+                        <span className="badge bg-warning text-dark"><i className="bi bi-trophy-fill"></i> #1</span>
+                      ) : (
+                        <span className="text-muted fw-bold">#{idx + 1}</span>
+                      )}
+                    </td>
+                    <td className="fw-semibold">
+                      {row.participanteNombre || `Participante #${row.participanteId}`}
+                    </td>
+                    <td className="text-center">{row.partidasJugadas || 0}</td>
+                    <td className="text-center text-success">{row.partidasGanadas || 0}</td>
+                    <td className="text-center text-danger">{row.partidasPerdidas || 0}</td>
+                    <td className="text-center">{row.diferenciaPuntaje !== undefined ? (row.diferenciaPuntaje > 0 ? `+${row.diferenciaPuntaje}` : row.diferenciaPuntaje) : 0}</td>
+                    <td className="text-center fw-bold" style={{ color: 'var(--color-acento)', fontSize: '1.1rem' }}>
+                      {row.puntos || 0}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    // --- COMPONENTE LLAVE DE TORNEO (BRACKET) ---
+    function LlaveTorneo({ partidas = [] }) {
+      const rondas = useMemo(() => {
+        const mapa = {};
+        partidas.forEach(p => {
+          const r = p.ronda || 1;
+          if (!mapa[r]) mapa[r] = [];
+          mapa[r].push(p);
+        });
+        return mapa;
+      }, [partidas]);
+
+      const listaRondas = Object.keys(rondas).sort((a, b) => Number(a) - Number(b));
+
+      if (listaRondas.length === 0) {
+        return (
+          <div className="text-center p-4 text-muted">
+            <i className="bi bi-diagram-3 display-6 d-block mb-2" style={{ opacity: 0.4 }}></i>
+            Las llaves competitivas aún no han sido generadas por el organizador.
+          </div>
+        );
+      }
+
+      return (
+        <div className="bracket-container">
+          {listaRondas.map(rondaNum => (
+            <div key={rondaNum} className="bracket-ronda">
+              <h5 className="text-muted small text-uppercase mb-2 pb-1 border-bottom" style={{ borderColor: 'var(--color-superficie-borde)' }}>
+                <i className="bi bi-flag me-1"></i> Ronda {rondaNum}
+              </h5>
+              {rondas[rondaNum].map(partida => (
+                <div key={partida.id} className="bracket-partida">
+                  <div className="d-flex justify-content-between small text-muted mb-2">
+                    <span>Partida #{partida.id}</span>
+                    <span className="badge" style={{ backgroundColor: partida.estado === 'FINALIZADA' ? 'rgba(0, 245, 212, 0.2)' : 'rgba(255, 183, 3, 0.2)', color: partida.estado === 'FINALIZADA' ? 'var(--color-acento)' : '#FFB703' }}>
+                      {partida.estado}
+                    </span>
+                  </div>
+
+                  <div className={`bracket-equipo mb-1 ${partida.ganadorId && partida.ganadorId === partida.participante1Id ? 'ganador' : ''}`}>
+                    <span>{partida.participante1Nombre || 'Por definir'}</span>
+                    <span className="fw-bold">{partida.puntaje1 !== undefined ? partida.puntaje1 : '-'}</span>
+                  </div>
+
+                  <div className={`bracket-equipo ${partida.ganadorId && partida.ganadorId === partida.participante2Id ? 'ganador' : ''} ${!partida.participante2Nombre ? 'tbd' : ''}`}>
+                    <span>{partida.participante2Nombre || 'Por definir'}</span>
+                    <span className="fw-bold">{partida.puntaje2 !== undefined ? partida.puntaje2 : '-'}</span>
+                  </div>
+
+                  {partida.resultadoValidado && (
+                    <div className="text-end mt-2" style={{ fontSize: '11px', color: 'var(--color-acento)' }}>
+                      <i className="bi bi-patch-check-fill me-1"></i> Resultado Oficial Validado
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // --- COMPONENTE LISTA DE PARTIDAS ---
+    function ListaPartidas({ partidas = [] }) {
+      const [rondaFiltro, setRondaFiltro] = useState('TODAS');
+
+      const partidasFiltradas = useMemo(() => {
+        if (rondaFiltro === 'TODAS') return partidas;
+        return partidas.filter(p => String(p.ronda) === String(rondaFiltro));
+      }, [partidas, rondaFiltro]);
+
+      const rondasDisponibles = useMemo(() => {
+        const setR = new Set(partidas.map(p => p.ronda || 1));
+        return Array.from(setR).sort((a, b) => a - b);
+      }, [partidas]);
+
+      return (
+        <div>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="mb-0 text-white"><i className="bi bi-controller me-2"></i> Calendario y Resultados</h5>
+            <div className="d-flex align-items-center gap-2">
+              <label className="small text-muted mb-0">Ronda:</label>
+              <select className="form-select form-select-sm bg-dark text-light border-secondary" style={{ width: '130px' }} value={rondaFiltro} onChange={(e) => setRondaFiltro(e.target.value)}>
+                <option value="TODAS">Todas las Rondas</option>
+                {rondasDisponibles.map(r => (
+                  <option key={r} value={r}>Ronda {r}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="row g-3">
+            {partidasFiltradas.map(p => (
+              <div key={p.id} className="col-md-6">
+                <div className="p-3 rounded" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                  <div className="d-flex justify-content-between small text-muted mb-2">
+                    <span><i className="bi bi-clock me-1"></i> {p.fechaProgramada ? new Date(p.fechaProgramada).toLocaleString() : 'Horario por confirmar'}</span>
+                    <span className="badge bg-secondary">Ronda {p.ronda}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center my-2">
+                    <div className={`fw-semibold ${p.ganadorId === p.participante1Id ? 'text-success' : ''}`}>
+                      {p.participante1Nombre || 'Por definir'}
+                    </div>
+                    <div className="px-3 py-1 bg-dark rounded border border-secondary fw-bold" style={{ color: 'var(--color-acento)' }}>
+                      {p.puntaje1 || 0} - {p.puntaje2 || 0}
+                    </div>
+                    <div className={`fw-semibold ${p.ganadorId === p.participante2Id ? 'text-success' : ''}`}>
+                      {p.participante2Nombre || 'Por definir'}
+                    </div>
+                  </div>
+                  {p.resultadoValidado && (
+                    <div className="small text-muted text-center mt-2 border-top pt-2" style={{ borderColor: 'var(--color-superficie-borde)' }}>
+                      <i className="bi bi-check2-circle text-success me-1"></i> Ganador: <strong>{p.ganadorNombre || 'Confirmado'}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // --- COMPONENTE ESTADO VACIO ---
+    function EstadoVacio({ icono = 'bi-inbox', titulo = 'Sin Resultados', mensaje = 'No se encontraron registros con los filtros aplicados.', botonTexto, onBotonClick }) {
+      return (
+        <div className="text-center py-5 px-3 my-4 rounded" style={{ backgroundColor: 'var(--color-superficie)', border: '1px dashed var(--color-superficie-borde)' }}>
+          <i className={`bi ${icono} display-4 mb-3 d-block`} style={{ color: 'var(--color-primario)' }}></i>
+          <h4 className="text-white mb-2">{titulo}</h4>
+          <p className="text-muted max-w-md mx-auto mb-3" style={{ maxWidth: '450px' }}>{mensaje}</p>
+          {botonTexto && (
+            <button className="boton-primario py-2 px-4" onClick={onBotonClick}>
+              {botonTexto}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VISTAS DEL CASO DE ESTUDIO (1 A 9)
+    // ==========================================
+
+    // --- 1. VISTA INICIO ---
+    function VistaInicio({ setVistaActual, onSeleccionarTorneo }) {
+      const torneosDestacados = window.MockData?.MOCK_TORNEOS?.slice(0, 3) || [];
+
+      return (
+        <div className="container py-4">
+          {/* Hero Section */}
+          <section className="p-4 p-md-5 mb-4 rounded-4" style={{ background: 'linear-gradient(135deg, #1C1430 0%, #0E0B16 100%)', border: '1px solid var(--color-primario)', boxShadow: 'var(--sombra-neon)' }}>
+            <div className="row align-items-center g-4">
+              <div className="col-lg-7">
+                <span className="badge mb-2 py-2 px-3" style={{ backgroundColor: 'rgba(0, 245, 212, 0.15)', color: 'var(--color-acento)', border: '1px solid var(--color-acento)' }}>
+                  <i className="bi bi-lightning-charge-fill me-1"></i> Temporada Competitiva 2026
+                </span>
+                <h1 className="display-4 fw-bold text-white mb-3">Domina la Arena, Conquista el Podio</h1>
+                <p className="lead text-muted mb-4">
+                  Participa en torneos de deportes electrónicos, forma tu escuadra, compite en brackets en vivo y asegura premios en efectivo.
+                </p>
+                <div className="d-flex gap-3 flex-wrap">
+                  <button className="boton-primario" onClick={() => setVistaActual('torneos')}>
+                    <i className="bi bi-trophy"></i> Explorar Torneos
+                  </button>
+                  <button className="boton-secundario" onClick={() => setVistaActual('equipos')}>
+                    <i className="bi bi-people"></i> Crear / Gestionar Equipo
+                  </button>
+                </div>
+              </div>
+              <div className="col-lg-5 text-center">
+                <div className="p-3 rounded-3" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                  <h6 className="text-muted small text-uppercase mb-2"><i className="bi bi-camera-video me-1"></i> Transmisión en Directo / Final</h6>
+                  <div className="ratio ratio-16x9 rounded overflow-hidden">
+                    <iframe 
+                      src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                      title="Transmisión eSports" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div className="small text-muted mt-2 d-flex justify-content-between align-items-center">
+                    <span><i className="bi bi-record-circle text-danger me-1"></i> Gran Final Circuito LoL</span>
+                    <span className="badge bg-danger">EN VIVO</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Estadísticas de la plataforma */}
+          <section className="row g-3 mb-5">
+            <div className="col-md-4">
+              <div className="tarjeta text-center">
+                <i className="bi bi-trophy-fill display-5 mb-2" style={{ color: 'var(--color-primario)' }}></i>
+                <h3 className="fw-bold text-white mb-0">12+</h3>
+                <div className="text-muted small">Torneos Oficiales Activos</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="tarjeta text-center">
+                <i className="bi bi-people-fill display-5 mb-2" style={{ color: 'var(--color-acento)' }}></i>
+                <h3 className="fw-bold text-white mb-0">64+</h3>
+                <div className="text-muted small">Equipos Profesionales Registrados</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="tarjeta text-center">
+                <i className="bi bi-cash-coin display-5 mb-2" style={{ color: '#FFB703' }}></i>
+                <h3 className="fw-bold text-white mb-0">$7,300,000 CLP</h3>
+                <div className="text-muted small">Bolsa de Premios en Disputa</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Torneos Destacados */}
+          <section className="mb-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 className="text-white mb-1"><i className="bi bi-fire text-danger me-2"></i> Torneos Destacados</h2>
+                <p className="text-muted small mb-0">Inscripciones abiertas y torneos en curso de esta semana.</p>
+              </div>
+              <button className="boton-secundario btn-sm" onClick={() => setVistaActual('torneos')}>
+                Ver Catálogo Completo <i className="bi bi-arrow-right"></i>
+              </button>
+            </div>
+            <div className="row g-4">
+              {torneosDestacados.map(torneo => (
+                <div key={torneo.id} className="col-md-4">
+                  <TarjetaTorneo 
+                    torneo={torneo} 
+                    onVerDetalle={(id) => { onSeleccionarTorneo(id); setVistaActual('detalle'); }}
+                    onInscribir={(id) => { onSeleccionarTorneo(id); setVistaActual('inscripcion'); }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    // --- 2. VISTA LISTADO DE TORNEOS ---
+    function VistaListadoTorneos({ setVistaActual, onSeleccionarTorneo }) {
+      const [torneos, setTorneos] = useState([]);
+      const [juegos, setJuegos] = useState([]);
+      const [filtroJuego, setFiltroJuego] = useState('');
+      const [filtroEstado, setFiltroEstado] = useState('');
+      const [busqueda, setBusqueda] = useState('');
+      const [fechaInicio, setFechaInicio] = useState('');
+      const [fechaFin, setFechaFin] = useState('');
+      const [errorFecha, setErrorFecha] = useState('');
+      const [cargando, setCargando] = useState(true);
+
+      useEffect(() => {
+        const cargarDatos = async () => {
+          try {
+            const listaTorneos = window.MockData?.MOCK_TORNEOS || [];
+            const listaJuegos = window.MockData?.MOCK_JUEGOS || [];
+            setTorneos(listaTorneos);
+            setJuegos(listaJuegos);
+          } finally {
+            setCargando(false);
+          }
+        };
+        cargarDatos();
+      }, []);
+
+      const handleFechaChange = (inicio, fin) => {
+        setFechaInicio(inicio);
+        setFechaFin(fin);
+        if (inicio && fin) {
+          const val = validationUtils.validarRangoFechas(inicio, fin);
+          if (!val.valido) {
+            setErrorFecha(val.mensaje);
+          } else {
+            setErrorFecha('');
+          }
+        } else {
+          setErrorFecha('');
+        }
+      };
+
+      const torneosFiltrados = useMemo(() => {
+        return torneos.filter(t => {
+          if (filtroJuego && String(t.juegoId) !== String(filtroJuego)) return false;
+          if (filtroEstado && t.estado !== filtroEstado) return false;
+          if (busqueda && !t.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false;
+          if (fechaInicio && new Date(t.fechaInicio).getTime() < new Date(fechaInicio).getTime()) return false;
+          if (fechaFin && new Date(t.fechaFin).getTime() > new Date(fechaFin).getTime()) return false;
+          return true;
+        });
+      }, [torneos, filtroJuego, filtroEstado, busqueda, fechaInicio, fechaFin]);
+
+      const resetFiltros = () => {
+        setFiltroJuego('');
+        setFiltroEstado('');
+        setBusqueda('');
+        setFechaInicio('');
+        setFechaFin('');
+        setErrorFecha('');
+      };
+
+      return (
+        <div className="container py-4">
+          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+              <h2 className="text-white mb-1"><i className="bi bi-trophy me-2" style={{ color: 'var(--color-primario)' }}></i> Catálogo de Torneos</h2>
+              <p className="text-muted small mb-0">Explora competencias oficiales, revisa cupos y fechas de cierre.</p>
+            </div>
+            <span className="badge bg-dark border border-secondary py-2 px-3">
+              {torneosFiltrados.length} torneos encontrados
+            </span>
+          </div>
+
+          {/* Barra de Filtros */}
+          <div className="tarjeta mb-4">
+            <div className="row g-3">
+              <div className="col-md-3">
+                <label className="etiqueta-formulario"><i className="bi bi-search me-1"></i> Buscar por Nombre</label>
+                <input 
+                  type="text" 
+                  className="control-formulario" 
+                  placeholder="Ej: Supercopa..." 
+                  value={busqueda} 
+                  onChange={(e) => setBusqueda(e.target.value)} 
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="etiqueta-formulario"><i className="bi bi-controller me-1"></i> Juego Habilitado</label>
+                <select className="control-formulario" value={filtroJuego} onChange={(e) => setFiltroJuego(e.target.value)}>
+                  <option value="">Todos los juegos</option>
+                  {juegos.map(j => (
+                    <option key={j.id} value={j.id}>{j.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-2">
+                <label className="etiqueta-formulario"><i className="bi bi-funnel me-1"></i> Estado</label>
+                <select className="control-formulario" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+                  <option value="">Todos los estados</option>
+                  <option value="ABIERTO">Abierto</option>
+                  <option value="EN_CURSO">En Curso</option>
+                  <option value="FINALIZADO">Finalizado</option>
+                </select>
+              </div>
+              <div className="col-md-2">
+                <label className="etiqueta-formulario"><i className="bi bi-calendar me-1"></i> Desde</label>
+                <input 
+                  type="date" 
+                  className="control-formulario" 
+                  value={fechaInicio} 
+                  onChange={(e) => handleFechaChange(e.target.value, fechaFin)} 
+                />
+              </div>
+              <div className="col-md-2">
+                <label className="etiqueta-formulario"><i className="bi bi-calendar-check me-1"></i> Hasta</label>
+                <input 
+                  type="date" 
+                  className="control-formulario" 
+                  value={fechaFin} 
+                  onChange={(e) => handleFechaChange(fechaInicio, e.target.value)} 
+                />
+              </div>
+            </div>
+
+            {errorFecha && (
+              <div className="mensaje-error mt-2">
+                <i className="bi bi-exclamation-triangle-fill"></i> {errorFecha}
+              </div>
+            )}
+          </div>
+
+          {/* Grilla de Torneos */}
+          {cargando ? (
+            <div className="text-center py-5 text-muted">
+              <div className="spinner-border text-primary mb-2" role="status"></div>
+              <div>Cargando torneos competitivos...</div>
+            </div>
+          ) : torneosFiltrados.length > 0 ? (
+            <div className="row g-4">
+              {torneosFiltrados.map(torneo => (
+                <div key={torneo.id} className="col-md-4">
+                  <TarjetaTorneo 
+                    torneo={torneo} 
+                    onVerDetalle={(id) => { onSeleccionarTorneo(id); setVistaActual('detalle'); }}
+                    onInscribir={(id) => { onSeleccionarTorneo(id); setVistaActual('inscripcion'); }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EstadoVacio 
+              icono="bi-search" 
+              titulo="No se encontraron torneos" 
+              mensaje="No hay torneos que coincidan con los criterios o el rango de fechas ingresado."
+              botonTexto="Restablecer Filtros"
+              onBotonClick={resetFiltros}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // --- 3. VISTA DETALLE DE TORNEO ---
+    function VistaDetalleTorneo({ torneoId, setVistaActual, onInscribir }) {
+      const [torneo, setTorneo] = useState(null);
+      const [inscripciones, setInscripciones] = useState([]);
+      const [partidas, setPartidas] = useState([]);
+      const [ranking, setRanking] = useState([]);
+      const [premios, setPremios] = useState([]);
+      const [pestanaActiva, setPestanaActiva] = useState('llaves');
+
+      useEffect(() => {
+        const id = Number(torneoId) || 2;
+        const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+        setTorneo(t);
+        setInscripciones(window.MockData?.MOCK_INSCRIPCIONES?.filter(i => i.torneoId === t.id) || []);
+        setPartidas(window.MockData?.MOCK_PARTIDAS?.filter(p => p.torneoId === t.id) || []);
+        setRanking(window.MockData?.MOCK_RANKINGS?.filter(r => r.torneoId === t.id) || []);
+        setPremios(window.MockData?.MOCK_PREMIOS?.filter(pr => pr.torneoId === t.id) || []);
+      }, [torneoId]);
+
+      if (!torneo) return null;
+
+      const cuposRestantes = tournamentUtils.cuposDisponibles(torneo.cupoMaximo, torneo.cuposOcupados);
+      const fueraPlazo = tournamentUtils.inscripcionFueraDePlazo(torneo.fechaCierreInscripcion);
+
+      return (
+        <div className="container py-4">
+          <button className="boton-secundario btn-sm mb-3" onClick={() => setVistaActual('torneos')}>
+            <i className="bi bi-arrow-left"></i> Volver a Torneos
+          </button>
+
+          {/* Banner de Información General */}
+          <div className="tarjeta mb-4" style={{ borderLeft: '4px solid var(--color-primario)' }}>
+            <div className="row align-items-center g-3">
+              <div className="col-lg-8">
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <span className="badge" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff' }}>
+                    {torneo.juegoNombre}
+                  </span>
+                  <span className={`insignia ${torneo.estado === 'ABIERTO' ? 'insignia-abierto' : torneo.estado === 'EN_CURSO' ? 'insignia-en-curso' : 'insignia-finalizado'}`}>
+                    {torneo.estado}
+                  </span>
+                  <span className="badge bg-secondary">Modalidad: {torneo.modalidad}</span>
+                </div>
+                <h2 className="text-white mb-2">{torneo.nombre}</h2>
+                <p className="text-muted mb-3">{torneo.descripcion}</p>
+                <div className="small text-muted d-flex gap-4 flex-wrap">
+                  <span><i className="bi bi-calendar-event me-1"></i> Inicio: <strong>{new Date(torneo.fechaInicio).toLocaleDateString()}</strong></span>
+                  <span><i className="bi bi-calendar-check me-1"></i> Cierre: <strong>{new Date(torneo.fechaCierreInscripcion).toLocaleDateString()}</strong></span>
+                  <span><i className="bi bi-cash-stack me-1"></i> Premios: <strong style={{ color: 'var(--color-acento)' }}>{torneo.premioTotal}</strong></span>
+                  <span><i className="bi bi-people me-1"></i> Cupos Disponibles: <strong>{cuposRestantes}</strong></span>
+                </div>
+              </div>
+              <div className="col-lg-4 text-lg-end">
+                {torneo.estado === 'ABIERTO' && !fueraPlazo && cuposRestantes > 0 ? (
+                  <button className="boton-primario" onClick={() => onInscribir(torneo.id)}>
+                    <i className="bi bi-pencil-square"></i> Inscribir a Torneo
+                  </button>
+                ) : (
+                  <div className="alert alert-secondary py-2 px-3 small d-inline-block text-start mb-0">
+                    <i className="bi bi-info-circle me-1"></i> Inscripciones no disponibles actualmente.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Pestañas de Navegación del Torneo */}
+          <ul className="nav nav-tabs mb-4" style={{ borderColor: 'var(--color-superficie-borde)' }}>
+            <li className="nav-item">
+              <button className={`nav-link ${pestanaActiva === 'llaves' ? 'active bg-dark text-white' : 'text-muted'}`} onClick={() => setPestanaActiva('llaves')}>
+                <i className="bi bi-diagram-3 me-1"></i> Llaves (Bracket)
+              </button>
+            </li>
+            <li className="nav-item">
+              <button className={`nav-link ${pestanaActiva === 'ranking' ? 'active bg-dark text-white' : 'text-muted'}`} onClick={() => setPestanaActiva('ranking')}>
+                <i className="bi bi-trophy me-1"></i> Tabla de Posiciones
+              </button>
+            </li>
+            <li className="nav-item">
+              <button className={`nav-link ${pestanaActiva === 'partidas' ? 'active bg-dark text-white' : 'text-muted'}`} onClick={() => setPestanaActiva('partidas')}>
+                <i className="bi bi-clock-history me-1"></i> Partidas y Horarios
+              </button>
+            </li>
+            <li className="nav-item">
+              <button className={`nav-link ${pestanaActiva === 'participantes' ? 'active bg-dark text-white' : 'text-muted'}`} onClick={() => setPestanaActiva('participantes')}>
+                <i className="bi bi-people me-1"></i> Inscritos ({inscripciones.length})
+              </button>
+            </li>
+            {torneo.estado === 'FINALIZADO' && (
+              <li className="nav-item">
+                <button className={`nav-link ${pestanaActiva === 'premios' ? 'active bg-dark text-warning' : 'text-warning'}`} onClick={() => setPestanaActiva('premios')}>
+                  <i className="bi bi-award-fill me-1"></i> Premios Asignados
+                </button>
+              </li>
+            )}
+          </ul>
+
+          {/* Contenido de Pestañas */}
+          <div className="tarjeta">
+            {pestanaActiva === 'llaves' && (
+              <LlaveTorneo partidas={partidas} />
+            )}
+
+            {pestanaActiva === 'ranking' && (
+              <div>
+                <h5 className="text-white mb-3"><i className="bi bi-trophy me-2 text-warning"></i> Clasificación Oficial</h5>
+                <TablaRanking ranking={ranking} />
+              </div>
+            )}
+
+            {pestanaActiva === 'partidas' && (
+              <ListaPartidas partidas={partidas} />
+            )}
+
+            {pestanaActiva === 'participantes' && (
+              <div>
+                <h5 className="text-white mb-3"><i className="bi bi-people me-2"></i> Lista de Participantes Confirmados</h5>
+                <div className="row g-3">
+                  {inscripciones.map(ins => (
+                    <div key={ins.id} className="col-md-4">
+                      <div className="p-3 rounded d-flex justify-content-between align-items-center" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                        <div>
+                          <strong>{ins.participanteNombre}</strong>
+                          <div className="small text-muted">Tipo: {ins.tipoParticipante}</div>
+                        </div>
+                        <span className="badge bg-success">{ins.estado}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {pestanaActiva === 'premios' && (
+              <div>
+                <h5 className="text-white mb-3" style={{ color: '#FFB703' }}><i className="bi bi-award me-2"></i> Premios y Ganadores del Torneo</h5>
+                <div className="row g-3">
+                  {premios.map(pr => (
+                    <div key={pr.id} className="col-md-4">
+                      <div className="tarjeta text-center" style={{ borderColor: pr.posicion === 1 ? '#C89B3C' : 'var(--color-superficie-borde)' }}>
+                        <i className={`bi bi-${pr.posicion === 1 ? 'trophy-fill text-warning' : pr.posicion === 2 ? 'award-fill text-secondary' : 'award text-info'} display-6 mb-2`}></i>
+                        <h4 className="text-white">Posición #{pr.posicion}</h4>
+                        <p className="text-muted small mb-2">{pr.descripcion}</p>
+                        <div className="fs-5 fw-bold mb-2" style={{ color: 'var(--color-acento)' }}>
+                          ${Number(pr.monto).toLocaleString()} CLP
+                        </div>
+                        {pr.ganadorNombre && (
+                          <span className="badge bg-success py-1 px-2">Ganador: {pr.ganadorNombre}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- 4. VISTA INSCRIPCION A TORNEO ---
+    function VistaInscripcionTorneo({ torneoId, setVistaActual, usuario }) {
+      const [torneo, setTorneo] = useState(null);
+      const [tipoParticipante, setTipoParticipante] = useState('EQUIPO');
+      const [equipoSeleccionadoId, setEquipoSeleccionadoId] = useState('');
+      const [misEquipos, setMisEquipos] = useState([]);
+      const [sancionesUsuario, setSancionesUsuario] = useState([]);
+      const [mensajeExito, setMensajeExito] = useState('');
+      const [cargando, setCargando] = useState(false);
+
+      useEffect(() => {
+        const id = Number(torneoId) || 1;
+        const t = window.MockData?.MOCK_TORNEOS?.find(x => x.id === id) || window.MockData?.MOCK_TORNEOS[0];
+        setTorneo(t);
+        const equipos = window.MockData?.MOCK_EQUIPOS || [];
+        setMisEquipos(equipos);
+        if (equipos.length > 0) setEquipoSeleccionadoId(String(equipos[0].id));
+
+        const sanciones = window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || [];
+        setSancionesUsuario(sanciones);
+      }, [torneoId, usuario]);
+
+      if (!torneo) return null;
+
+      const equipoActual = misEquipos.find(e => String(e.id) === String(equipoSeleccionadoId));
+      const juegoTorneo = window.MockData?.MOCK_JUEGOS?.find(j => j.id === torneo.juegoId);
+
+      // Verificaciones de Reglas
+      const fueraPlazo = tournamentUtils.inscripcionFueraDePlazo(torneo.fechaCierreInscripcion);
+      const cuposDisp = tournamentUtils.cuposDisponibles(torneo.cupoMaximo, torneo.cuposOcupados);
+      const sinCupo = cuposDisp <= 0;
+      const tieneSancion = tournamentUtils.tieneSancionActiva(sancionesUsuario);
+      const esEquipoCompleto = tipoParticipante === 'EQUIPO' ? tournamentUtils.equipoCompleto(equipoActual, juegoTorneo) : true;
+      const yaInscrito = window.MockData?.MOCK_INSCRIPCIONES?.some(i => i.torneoId === torneo.id && i.participanteId === Number(equipoSeleccionadoId));
+
+      const puedeEnviar = !fueraPlazo && !sinCupo && !tieneSancion && esEquipoCompleto && !yaInscrito && usuario;
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!puedeEnviar) return;
+
+        setCargando(true);
+        setTimeout(() => {
+          const nuevaInscripcion = {
+            id: Date.now(),
+            torneoId: torneo.id,
+            tipoParticipante,
+            participanteId: Number(equipoSeleccionadoId) || usuario.id,
+            participanteNombre: tipoParticipante === 'EQUIPO' ? equipoActual?.nombre : (usuario?.apodo || usuario?.nombre),
+            estado: 'APROBADA',
+            fechaInscripcion: new Date().toISOString()
+          };
+          window.MockData.MOCK_INSCRIPCIONES.push(nuevaInscripcion);
+          torneo.cuposOcupados = (torneo.cuposOcupados || 0) + 1;
+          setCargando(false);
+          setMensajeExito(`¡Inscripción confirmada exitosamente para ${nuevaInscripcion.participanteNombre}!`);
+        }, 600);
+      };
+
+      return (
+        <div className="container py-4" style={{ maxWidth: '780px' }}>
+          <button className="boton-secundario btn-sm mb-3" onClick={() => setVistaActual('detalle')}>
+            <i className="bi bi-arrow-left"></i> Volver al Detalle
+          </button>
+
+          <div className="tarjeta">
+            <h2 className="text-white mb-1"><i className="bi bi-pencil-square me-2" style={{ color: 'var(--color-primario)' }}></i> Formulario de Inscripción</h2>
+            <p className="text-muted small mb-4">Torneo: <strong>{torneo.nombre}</strong> ({torneo.juegoNombre})</p>
+
+            {mensajeExito ? (
+              <div className="alert alert-success p-4 text-center rounded">
+                <i className="bi bi-check-circle-fill display-4 d-block mb-2 text-success"></i>
+                <h4 className="text-success">{mensajeExito}</h4>
+                <p className="small mb-3">Tu cupo ha sido reservado y podrás consultar tus partidas en la sección de llaves.</p>
+                <button className="boton-primario" onClick={() => setVistaActual('detalle')}>
+                  Ver Llaves del Torneo
+                </button>
+              </div>
+            ) : (
+              <form id="form-inscripcion" onSubmit={handleSubmit}>
+                {/* Advertencia de No Autenticado */}
+                {!usuario && (
+                  <div className="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                    <i className="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>Debe iniciar sesión para registrar una inscripción oficial en la arena.</div>
+                  </div>
+                )}
+
+                {/* Tipo de Participante */}
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Modalidad de Inscripción</label>
+                  <div className="d-flex gap-3">
+                    <div className="form-check">
+                      <input className="form-check-input" type="radio" name="tipoParticipante" id="tipoEquipo" value="EQUIPO" checked={tipoParticipante === 'EQUIPO'} onChange={() => setTipoParticipante('EQUIPO')} />
+                      <label className="form-check-label" htmlFor="tipoEquipo">Inscripción por Equipo</label>
+                    </div>
+                    <div className="form-check">
+                      <input className="form-check-input" type="radio" name="tipoParticipante" id="tipoIndividual" value="INDIVIDUAL" checked={tipoParticipante === 'INDIVIDUAL'} onChange={() => setTipoParticipante('INDIVIDUAL')} />
+                      <label className="form-check-label" htmlFor="tipoIndividual">Inscripción Individual (1v1)</label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Selector de Equipo */}
+                {tipoParticipante === 'EQUIPO' && (
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario" htmlFor="select-equipo">Seleccionar Equipo Propio</label>
+                    <select id="select-equipo" className="control-formulario" value={equipoSeleccionadoId} onChange={(e) => setEquipoSeleccionadoId(e.target.value)}>
+                      {misEquipos.map(eq => (
+                        <option key={eq.id} value={eq.id}>
+                          {eq.nombre} ({eq.miembros?.length || 0} integrantes)
+                        </option>
+                      ))}
+                    </select>
+                    <div className="texto-ayuda">El juego exige mínimo {juegoTorneo?.minimoPorEquipo || 5} integrantes por escuadra.</div>
+                  </div>
+                )}
+
+                {/* Checklist de Validación de Requisitos */}
+                <div className="p-3 rounded mb-4" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                  <h6 className="text-white mb-3"><i className="bi bi-shield-check me-2" style={{ color: 'var(--color-acento)' }}></i> Validación de Requisitos de Elegibilidad</h6>
+                  
+                  <div className="d-flex flex-column gap-2 small">
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span>Plazo de Inscripción Vigente:</span>
+                      {fueraPlazo ? (
+                        <span className="text-danger fw-bold"><i className="bi bi-x-circle-fill"></i> Fuera de plazo ({new Date(torneo.fechaCierreInscripcion).toLocaleDateString()})</span>
+                      ) : (
+                        <span className="text-success fw-bold"><i className="bi bi-check-circle-fill"></i> Vigente</span>
+                      )}
+                    </div>
+
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span>Cupo Disponible en Torneo:</span>
+                      {sinCupo ? (
+                        <span className="text-danger fw-bold"><i className="bi bi-x-circle-fill"></i> Torneo Lleno (0 cupos)</span>
+                      ) : (
+                        <span className="text-success fw-bold"><i className="bi bi-check-circle-fill"></i> {cuposDisp} cupos disponibles</span>
+                      )}
+                    </div>
+
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span>Integrantes Requeridos ({juegoTorneo?.minimoPorEquipo || 1}):</span>
+                      {!esEquipoCompleto ? (
+                        <span className="text-danger fw-bold"><i className="bi bi-x-circle-fill"></i> Equipo incompleto ({equipoActual?.miembros?.length || 0}/{juegoTorneo?.minimoPorEquipo || 5})</span>
+                      ) : (
+                        <span className="text-success fw-bold"><i className="bi bi-check-circle-fill"></i> Escuadra Completa</span>
+                      )}
+                    </div>
+
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span>Historial Disciplinario (Sanciones):</span>
+                      {tieneSancion ? (
+                        <span className="text-danger fw-bold"><i className="bi bi-slash-circle-fill"></i> Sanción Activa Vigente</span>
+                      ) : (
+                        <span className="text-success fw-bold"><i className="bi bi-check-circle-fill"></i> Sin sanciones</span>
+                      )}
+                    </div>
+
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span>Duplicidad de Registro:</span>
+                      {yaInscrito ? (
+                        <span className="text-danger fw-bold"><i className="bi bi-x-circle-fill"></i> Ya está inscrito en este torneo</span>
+                      ) : (
+                        <span className="text-success fw-bold"><i className="bi bi-check-circle-fill"></i> No registrado previamente</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botón de Envío */}
+                <button type="submit" id="btn-confirmar-inscripcion" className="boton-primario w-100 py-3" disabled={!puedeEnviar || cargando}>
+                  {cargando ? (
+                    <span><span className="spinner-border spinner-border-sm me-2"></span>Registrando...</span>
+                  ) : (
+                    <span><i className="bi bi-check-lg me-1"></i> Confirmar Inscripción en Torneo</span>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- 5. VISTA GESTION DE EQUIPO ---
+    function VistaGestionEquipo({ usuario }) {
+      const [equipos, setEquipos] = useState([]);
+      const [equipoActivo, setEquipoActivo] = useState(null);
+      const [nuevoNombre, setNuevoNombre] = useState('');
+      const [juegoId, setJuegoId] = useState('1');
+      const [juegos, setJuegos] = useState([]);
+      const [nuevoMiembroApodo, setNuevoMiembroApodo] = useState('');
+      const [nuevoMiembroRol, setNuevoMiembroRol] = useState('Duelista');
+      const [errorNombre, setErrorNombre] = useState('');
+      const [errorMiembro, setErrorMiembro] = useState('');
+
+      useEffect(() => {
+        setEquipos(window.MockData?.MOCK_EQUIPOS || []);
+        setJuegos(window.MockData?.MOCK_JUEGOS || []);
+        if (window.MockData?.MOCK_EQUIPOS?.length > 0) {
+          setEquipoActivo(window.MockData.MOCK_EQUIPOS[0]);
+        }
+      }, []);
+
+      const handleCrearEquipo = (e) => {
+        e.preventDefault();
+        const val = validationUtils.validarNombreEquipo ? validationUtils.validarNombreEquipo(nuevoNombre, equipos) : { valido: nuevoNombre.length >= 3, mensaje: 'Nombre obligatorio' };
+        if (!val.valido) {
+          setErrorNombre(val.mensaje);
+          return;
+        }
+        setErrorNombre('');
+
+        const juegoObj = juegos.find(j => String(j.id) === String(juegoId));
+        const nuevo = {
+          id: Date.now(),
+          nombre: nuevoNombre.trim(),
+          juegoId: Number(juegoId),
+          juegoNombre: juegoObj?.nombre || 'Juego Competitivo',
+          capitanId: usuario?.id || 3,
+          capitanNombre: usuario?.apodo || 'ItsTuki',
+          estado: 'ACTIVO',
+          miembros: [
+            { usuarioId: usuario?.id || 3, apodo: usuario?.apodo || 'ItsTuki', rol: 'Capitán' }
+          ]
+        };
+
+        const listaActualizada = [...equipos, nuevo];
+        setEquipos(listaActualizada);
+        window.MockData.MOCK_EQUIPOS.push(nuevo);
+        setEquipoActivo(nuevo);
+        setNuevoNombre('');
+      };
+
+      const handleAgregarMiembro = (e) => {
+        e.preventDefault();
+        const val = validationUtils.validarApodo(nuevoMiembroApodo);
+        if (!val.valido) {
+          setErrorMiembro(val.mensaje);
+          return;
+        }
+
+        // Verificar duplicado en equipo
+        const yaExiste = equipoActivo.miembros.some(m => m.apodo.toLowerCase() === nuevoMiembroApodo.trim().toLowerCase());
+        if (yaExiste) {
+          setErrorMiembro('Este jugador ya forma parte del equipo.');
+          return;
+        }
+
+        setErrorMiembro('');
+        const nuevoMiembro = {
+          usuarioId: Date.now(),
+          apodo: nuevoMiembroApodo.trim(),
+          rol: nuevoMiembroRol
+        };
+
+        equipoActivo.miembros.push(nuevoMiembro);
+        setEquipos([...equipos]);
+        setNuevoMiembroApodo('');
+      };
+
+      const handleRemoverMiembro = (apodo) => {
+        equipoActivo.miembros = equipoActivo.miembros.filter(m => m.apodo !== apodo);
+        setEquipos([...equipos]);
+      };
+
+      return (
+        <div className="container py-4">
+          <h2 className="text-white mb-1"><i className="bi bi-people me-2" style={{ color: 'var(--color-primario)' }}></i> Gestión de Equipos</h2>
+          <p className="text-muted small mb-4">Administra tu plantilla de jugadores, asigna roles tácticos y crea nuevas escuadras.</p>
+
+          <div className="row g-4">
+            {/* Formulario Crear Equipo */}
+            <div className="col-lg-5">
+              <div className="tarjeta mb-4">
+                <h4 className="text-white mb-3"><i className="bi bi-shield-plus me-2" style={{ color: 'var(--color-acento)' }}></i> Crear Nuevo Equipo</h4>
+                <form onSubmit={handleCrearEquipo}>
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Nombre del Equipo</label>
+                    <input 
+                      type="text" 
+                      className={`control-formulario ${errorNombre ? 'invalido' : ''}`}
+                      placeholder="Ej: Phantom Knights"
+                      value={nuevoNombre}
+                      onChange={(e) => setNuevoNombre(e.target.value)}
+                    />
+                    {errorNombre && <div className="mensaje-error"><i className="bi bi-exclamation-circle"></i> {errorNombre}</div>}
+                  </div>
+
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Juego Principal</label>
+                    <select className="control-formulario" value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
+                      {juegos.map(j => (
+                        <option key={j.id} value={j.id}>{j.nombre} ({j.minimoPorEquipo}v{j.minimoPorEquipo})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button type="submit" className="boton-primario w-100 py-2">
+                    <i className="bi bi-plus-circle me-1"></i> Registrar Equipo
+                  </button>
+                </form>
+              </div>
+
+              {/* Lista de Equipos */}
+              <div className="tarjeta">
+                <h5 className="text-white mb-3">Mis Equipos Registrados</h5>
+                <div className="d-flex flex-column gap-2">
+                  {equipos.map(eq => (
+                    <div 
+                      key={eq.id} 
+                      className={`p-3 rounded cursor-pointer d-flex justify-content-between align-items-center ${equipoActivo?.id === eq.id ? 'border border-primary' : ''}`}
+                      style={{ backgroundColor: equipoActivo?.id === eq.id ? 'var(--color-superficie-hover)' : '#120c22', cursor: 'pointer' }}
+                      onClick={() => setEquipoActivo(eq)}
+                    >
+                      <div>
+                        <strong className="text-white">{eq.nombre}</strong>
+                        <div className="small text-muted">{eq.juegoNombre} • {eq.miembros?.length || 0} integrantes</div>
+                      </div>
+                      <span className="badge bg-success">{eq.estado}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Detalle y Roster del Equipo Activo */}
+            <div className="col-lg-7">
+              {equipoActivo ? (
+                <div className="tarjeta">
+                  <div className="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                      <span className="badge mb-1" style={{ backgroundColor: 'rgba(145, 70, 255, 0.2)', color: '#d1b3ff' }}>{equipoActivo.juegoNombre}</span>
+                      <h3 className="text-white mb-1">{equipoActivo.nombre}</h3>
+                      <div className="small text-muted">Capitán: <strong>{equipoActivo.capitanNombre}</strong></div>
+                    </div>
+                    <span className="badge bg-success py-2 px-3">{equipoActivo.estado}</span>
+                  </div>
+
+                  {/* Formulario Agregar Miembro */}
+                  <div className="p-3 rounded mb-4" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                    <h6 className="text-white mb-2"><i className="bi bi-person-plus me-1" style={{ color: 'var(--color-acento)' }}></i> Agregar Jugador al Roster</h6>
+                    <form onSubmit={handleAgregarMiembro} className="row g-2 align-items-end">
+                      <div className="col-md-5">
+                        <label className="small text-muted mb-1">Apodo del Jugador</label>
+                        <input 
+                          type="text" 
+                          className="control-formulario py-1" 
+                          placeholder="Sin espacios (ej: Phoenix99)"
+                          value={nuevoMiembroApodo}
+                          onChange={(e) => setNuevoMiembroApodo(e.target.value)}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="small text-muted mb-1">Rol en Equipo</label>
+                        <select className="control-formulario py-1" value={nuevoMiembroRol} onChange={(e) => setNuevoMiembroRol(e.target.value)}>
+                          <option value="Duelista">Duelista / Fragger</option>
+                          <option value="Iniciador">Iniciador</option>
+                          <option value="Controlador">Controlador</option>
+                          <option value="Centinela">Centinela / Support</option>
+                          <option value="Suplente">Suplente</option>
+                        </select>
+                      </div>
+                      <div className="col-md-3">
+                        <button type="submit" className="boton-acento w-100 py-1" style={{ fontSize: '13px' }}>
+                          <i className="bi bi-person-plus-fill"></i> Añadir
+                        </button>
+                      </div>
+                    </form>
+                    {errorMiembro && <div className="mensaje-error mt-2"><i className="bi bi-exclamation-circle"></i> {errorMiembro}</div>}
+                  </div>
+
+                  {/* Tabla de Miembros */}
+                  <h5 className="text-white mb-3">Plantilla de Integrantes ({equipoActivo.miembros?.length || 0})</h5>
+                  <div className="table-responsive">
+                    <table className="tabla-esports">
+                      <thead>
+                        <tr>
+                          <th>Apodo</th>
+                          <th>Rol Táctico</th>
+                          <th className="text-end">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {equipoActivo.miembros?.map((m, idx) => (
+                          <tr key={idx}>
+                            <td className="fw-semibold text-white">
+                              <i className="bi bi-person-fill me-1" style={{ color: 'var(--color-primario)' }}></i> {m.apodo}
+                            </td>
+                            <td>
+                              <span className="badge bg-dark border border-secondary">{m.rol}</span>
+                            </td>
+                            <td className="text-end">
+                              {m.rol !== 'Capitán' && (
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoverMiembro(m.apodo)}>
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <EstadoVacio titulo="Selecciona un equipo" mensaje="Elige un equipo del menú lateral para ver y gestionar su plantilla." />
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 6. VISTA PERFIL DE JUGADOR ---
+    function VistaPerfilJugador({ usuario }) {
+      const [apodo, setApodo] = useState(usuario?.apodo || 'ItsTuki');
+      const [email, setEmail] = useState(usuario?.email || 'jugador@arena.com');
+      const [telefono, setTelefono] = useState(usuario?.telefono || '+56933445566');
+      const [errorApodo, setErrorApodo] = useState('');
+      const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+
+      const sanciones = window.MockData?.MOCK_SANCIONES?.filter(s => s.usuarioId === (usuario?.id || 3)) || [];
+
+      const handleGuardarPerfil = (e) => {
+        e.preventDefault();
+        const val = validationUtils.validarApodo(apodo);
+        if (!val.valido) {
+          setErrorApodo(val.mensaje);
+          return;
+        }
+        setErrorApodo('');
+        setGuardadoExitoso(true);
+        setTimeout(() => setGuardadoExitoso(false), 3000);
+      };
+
+      return (
+        <div className="container py-4">
+          <h2 className="text-white mb-1"><i className="bi bi-person-badge me-2" style={{ color: 'var(--color-primario)' }}></i> Perfil de Jugador Competitivo</h2>
+          <p className="text-muted small mb-4">Ficha técnica, estadísticas de victorias/derrotas e historial de sanciones.</p>
+
+          <div className="row g-4">
+            {/* Formulario de Datos */}
+            <div className="col-lg-6">
+              <div className="tarjeta">
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px', backgroundColor: 'var(--color-primario)', color: '#fff', fontSize: '1.8rem', fontWeight: 'bold' }}>
+                    {apodo.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-white mb-0">{apodo}</h3>
+                    <div className="small text-muted">{email} • Rol: <strong>{usuario?.rol || 'JUGADOR'}</strong></div>
+                  </div>
+                </div>
+
+                {guardadoExitoso && (
+                  <div className="alert alert-success py-2 small mb-3">
+                    <i className="bi bi-check-circle-fill me-1"></i> Perfil actualizado correctamente.
+                  </div>
+                )}
+
+                <form onSubmit={handleGuardarPerfil}>
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Apodo en Arena (In-game Nickname)</label>
+                    <input 
+                      type="text" 
+                      className={`control-formulario ${errorApodo ? 'invalido' : ''}`}
+                      value={apodo}
+                      onChange={(e) => setApodo(e.target.value)}
+                    />
+                    <div className="texto-ayuda">El apodo es obligatorio, sin espacios y entre 3 a 20 caracteres.</div>
+                    {errorApodo && <div className="mensaje-error"><i className="bi bi-exclamation-circle"></i> {errorApodo}</div>}
+                  </div>
+
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Correo Electrónico</label>
+                    <input type="email" className="control-formulario" value={email} disabled />
+                  </div>
+
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Teléfono de Contacto</label>
+                    <input 
+                      type="text" 
+                      className="control-formulario" 
+                      value={telefono} 
+                      onChange={(e) => setTelefono(e.target.value)} 
+                    />
+                  </div>
+
+                  <button type="submit" className="boton-primario w-100 py-2">
+                    <i className="bi bi-save me-1"></i> Guardar Cambios
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Estadísticas y Sanciones */}
+            <div className="col-lg-6">
+              {/* Stats Card */}
+              <div className="tarjeta mb-4">
+                <h5 className="text-white mb-3"><i className="bi bi-graph-up me-2" style={{ color: 'var(--color-acento)' }}></i> Estadísticas Competitivas</h5>
+                <div className="row g-3 text-center">
+                  <div className="col-4">
+                    <div className="p-3 rounded" style={{ backgroundColor: '#120c22' }}>
+                      <div className="fs-4 fw-bold text-success">28</div>
+                      <div className="small text-muted">Victorias</div>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="p-3 rounded" style={{ backgroundColor: '#120c22' }}>
+                      <div className="fs-4 fw-bold text-danger">9</div>
+                      <div className="small text-muted">Derrotas</div>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="p-3 rounded" style={{ backgroundColor: '#120c22' }}>
+                      <div className="fs-4 fw-bold" style={{ color: 'var(--color-acento)' }}>75.6%</div>
+                      <div className="small text-muted">Winrate</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sanciones Card */}
+              <div className="tarjeta">
+                <h5 className="text-white mb-3"><i className="bi bi-shield-exclamation me-2 text-danger"></i> Historial Disciplinario y Sanciones</h5>
+                {sanciones.length > 0 ? (
+                  <div className="d-flex flex-column gap-2">
+                    {sanciones.map(s => (
+                      <div key={s.id} className="p-3 rounded" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <strong className="text-white">{s.motivo}</strong>
+                          <span className={`insignia ${s.activa ? 'insignia-sancion' : 'insignia-finalizado'}`}>
+                            {s.estado}
+                          </span>
+                        </div>
+                        <div className="small text-muted">
+                          Período: {new Date(s.fechaInicio).toLocaleDateString()} al {new Date(s.fechaFin).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="alert alert-success py-2 small mb-0">
+                    <i className="bi bi-check-circle-fill me-1"></i> Cuenta en estado impecable. Sin sanciones vigentes ni históricas.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 7. VISTA AUTENTICACION (EP3) ---
+    function VistaAutenticacion({ setVistaActual, setUsuario }) {
+      const [modo, setModo] = useState('login');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [nombre, setNombre] = useState('');
+      const [apodo, setApodo] = useState('');
+      const [rolRegistro, setRolRegistro] = useState('JUGADOR');
+      const [errorMensaje, setErrorMensaje] = useState('');
+      const [cargando, setCargando] = useState(false);
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        setErrorMensaje('');
+        const valEmail = validationUtils.validarEmail(email);
+        const valPass = validationUtils.validarPassword(password);
+        if (!valEmail.valido) { setErrorMensaje(valEmail.mensaje); return; }
+        if (!valPass.valido) { setErrorMensaje(valPass.mensaje); return; }
+
+        setCargando(true);
+        try {
+          if (window.AuthService) {
+            const res = await window.AuthService.login(email, password);
+            setUsuario(res.user);
+            // Redirigir según rol
+            if (res.user.rol === 'ADMINISTRADOR') setVistaActual('admin');
+            else if (res.user.rol === 'ORGANIZADOR') setVistaActual('organizador');
+            else setVistaActual('torneos');
+          }
+        } catch (err) {
+          setErrorMensaje(err.message || 'Error al iniciar sesión.');
+        } finally {
+          setCargando(false);
+        }
+      };
+
+      const handleRegistro = async (e) => {
+        e.preventDefault();
+        setErrorMensaje('');
+        const valEmail = validationUtils.validarEmail(email);
+        const valPass = validationUtils.validarPassword(password);
+        const valApodo = validationUtils.validarApodo(apodo);
+
+        if (!valApodo.valido) { setErrorMensaje(valApodo.mensaje); return; }
+        if (!valEmail.valido) { setErrorMensaje(valEmail.mensaje); return; }
+        if (!valPass.valido) { setErrorMensaje(valPass.mensaje); return; }
+
+        setCargando(true);
+        try {
+          if (window.AuthService) {
+            await window.AuthService.registro({
+              email,
+              password,
+              nombre: nombre || apodo,
+              apodo,
+              rol: rolRegistro
+            });
+            // Auto login tras registro exitoso
+            const res = await window.AuthService.login(email, password);
+            setUsuario(res.user);
+            setVistaActual('torneos');
+          }
+        } catch (err) {
+          setErrorMensaje(err.message || 'Error al registrar cuenta.');
+        } finally {
+          setCargando(false);
+        }
+      };
+
+      return (
+        <div className="container py-5" style={{ maxWidth: '480px' }}>
+          <div className="tarjeta">
+            <div className="text-center mb-4">
+              <i className="bi bi-controller display-4" style={{ color: 'var(--color-primario)' }}></i>
+              <h3 className="text-white mt-2">Acceso a eSports Arena</h3>
+              <p className="text-muted small">Microservicio de Autenticación con JWT (Puerto 8080/8070)</p>
+            </div>
+
+            <div className="d-flex mb-4 p-1 rounded" style={{ backgroundColor: '#120c22', border: '1px solid var(--color-superficie-borde)' }}>
+              <button 
+                className={`btn flex-grow-1 ${modo === 'login' ? 'btn-primary-custom text-white' : 'btn-link text-muted text-decoration-none'}`} 
+                onClick={() => { setModo('login'); setErrorMensaje(''); }}
+              >
+                Iniciar Sesión
+              </button>
+              <button 
+                className={`btn flex-grow-1 ${modo === 'registro' ? 'btn-primary-custom text-white' : 'btn-link text-muted text-decoration-none'}`} 
+                onClick={() => { setModo('registro'); setErrorMensaje(''); }}
+              >
+                Registrarse
+              </button>
+            </div>
+
+            {errorMensaje && (
+              <div className="alert alert-danger py-2 px-3 small mb-3 d-flex align-items-center gap-2">
+                <i className="bi bi-exclamation-triangle-fill"></i>
+                <span>{errorMensaje}</span>
+              </div>
+            )}
+
+            {modo === 'login' ? (
+              <form onSubmit={handleLogin}>
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario" htmlFor="email-login">Correo Electrónico</label>
+                  <input 
+                    type="email" 
+                    id="email-login" 
+                    className="control-formulario" 
+                    placeholder="usuario@arena.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario" htmlFor="pass-login">Contraseña</label>
+                  <input 
+                    type="password" 
+                    id="pass-login" 
+                    className="control-formulario" 
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <button type="submit" className="boton-primario w-100 py-2 mb-3" disabled={cargando}>
+                  {cargando ? 'Autenticando...' : 'Entrar a la Plataforma'}
+                </button>
+
+                <div className="p-2 rounded bg-dark border border-secondary small text-muted">
+                  <strong>Cuentas rápidas de prueba:</strong><br />
+                  • Admin: <code>admin@arena.com</code> / pass: <code>123456</code><br />
+                  • Organizador: <code>organizador@arena.com</code> / pass: <code>123456</code><br />
+                  • Jugador: <code>jugador@arena.com</code> / pass: <code>123456</code>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleRegistro}>
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Nombre Completo</label>
+                  <input 
+                    type="text" 
+                    className="control-formulario" 
+                    placeholder="Nombre y Apellido"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Apodo Competitivo</label>
+                  <input 
+                    type="text" 
+                    className="control-formulario" 
+                    placeholder="Sin espacios (ej: GamerPro)"
+                    value={apodo}
+                    onChange={(e) => setApodo(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Correo Electrónico</label>
+                  <input 
+                    type="email" 
+                    className="control-formulario" 
+                    placeholder="correo@ejemplo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Contraseña</label>
+                  <input 
+                    type="password" 
+                    className="control-formulario" 
+                    placeholder="Mínimo 6 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="campo-formulario">
+                  <label className="etiqueta-formulario">Rol Inicial</label>
+                  <select className="control-formulario" value={rolRegistro} onChange={(e) => setRolRegistro(e.target.value)}>
+                    <option value="JUGADOR">Jugador</option>
+                    <option value="ORGANIZADOR">Organizador de Torneos</option>
+                  </select>
+                </div>
+
+                <button type="submit" className="boton-primario w-100 py-2" disabled={cargando}>
+                  {cargando ? 'Creando cuenta...' : 'Crear Cuenta y Entrar'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- 8. VISTA PANEL ORGANIZADOR (EP3 - RUTA RESTRINGIDA) ---
+    function VistaPanelOrganizador({ usuario }) {
+      const [inscripciones, setInscripciones] = useState([]);
+      const [partidas, setPartidas] = useState([]);
+      const [torneos, setTorneos] = useState([]);
+      const [torneoSeleccionadoId, setTorneoSeleccionadoId] = useState('2');
+      const [partidaEditando, setPartidaEditando] = useState(null);
+      const [puntaje1, setPuntaje1] = useState(0);
+      const [puntaje2, setPuntaje2] = useState(0);
+      const [ganadorId, setGanadorId] = useState('');
+      const [motivoSancion, setMotivoSancion] = useState('');
+      const [usuarioSancionId, setUsuarioSancionId] = useState('6');
+      const [mensajeExito, setMensajeExito] = useState('');
+
+      useEffect(() => {
+        setTorneos(window.MockData?.MOCK_TORNEOS || []);
+        setInscripciones(window.MockData?.MOCK_INSCRIPCIONES || []);
+        setPartidas(window.MockData?.MOCK_PARTIDAS || []);
+      }, []);
+
+      if (!usuario || (usuario.rol !== 'ORGANIZADOR' && usuario.rol !== 'ADMINISTRADOR')) {
+        return (
+          <div className="container py-5 text-center">
+            <div className="tarjeta max-w-md mx-auto py-5">
+              <i className="bi bi-shield-x display-3 text-danger mb-3 d-block"></i>
+              <h3 className="text-white">Acceso Restringido (403 Forbidden)</h3>
+              <p className="text-muted">Esta ruta es exclusiva para Organizadores y Administradores de la arena.</p>
+            </div>
+          </div>
+        );
+      }
+
+      const handleAprobarInscripcion = (id) => {
+        const ins = inscripciones.find(i => i.id === id);
+        if (ins) {
+          ins.estado = 'APROBADA';
+          setInscripciones([...inscripciones]);
+          setMensajeExito(`Inscripción #${id} aprobada con éxito.`);
+          setTimeout(() => setMensajeExito(''), 3000);
+        }
+      };
+
+      const handleAbrirResultado = (partida) => {
+        setPartidaEditando(partida);
+        setPuntaje1(partida.puntaje1 || 0);
+        setPuntaje2(partida.puntaje2 || 0);
+        setGanadorId(partida.ganadorId ? String(partida.ganadorId) : (partida.participante1Id ? String(partida.participante1Id) : ''));
+      };
+
+      const handleGuardarResultado = (e) => {
+        e.preventDefault();
+        if (!partidaEditando) return;
+        if (puntaje1 < 0 || puntaje2 < 0) {
+          alert('Los puntajes no pueden ser negativos.');
+          return;
+        }
+
+        partidaEditando.puntaje1 = Number(puntaje1);
+        partidaEditando.puntaje2 = Number(puntaje2);
+        partidaEditando.ganadorId = Number(ganadorId);
+        partidaEditando.ganadorNombre = ganadorId === String(partidaEditando.participante1Id) ? partidaEditando.participante1Nombre : partidaEditando.participante2Nombre;
+        partidaEditando.estado = 'FINALIZADA';
+        partidaEditando.resultadoValidado = true;
+
+        setPartidas([...partidas]);
+        setPartidaEditando(null);
+        setMensajeExito(`Resultado de Partida #${partidaEditando.id} validado correctamente.`);
+        setTimeout(() => setMensajeExito(''), 3000);
+      };
+
+      const handleAplicarSancion = (e) => {
+        e.preventDefault();
+        if (!motivoSancion) return;
+        const nueva = {
+          id: Date.now(),
+          usuarioId: Number(usuarioSancionId),
+          usuarioApodo: 'Shadow',
+          motivo: motivoSancion,
+          fechaInicio: new Date().toISOString(),
+          fechaFin: new Date(Date.now() + 7 * 86400000).toISOString(),
+          estado: 'ACTIVA',
+          activa: true
+        };
+        window.MockData.MOCK_SANCIONES.push(nueva);
+        setMotivoSancion('');
+        setMensajeExito(`Sanción aplicada exitosamente al usuario #${usuarioSancionId}.`);
+        setTimeout(() => setMensajeExito(''), 3000);
+      };
+
+      return (
+        <div className="container py-4">
+          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+              <span className="badge bg-warning text-dark mb-1"><i className="bi bi-speedometer2"></i> Rol: {usuario.rol}</span>
+              <h2 className="text-white mb-0">Panel de Operaciones del Organizador</h2>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <label className="text-muted small mb-0">Torneo en Operación:</label>
+              <select className="control-formulario py-1" style={{ width: '220px' }} value={torneoSeleccionadoId} onChange={(e) => setTorneoSeleccionadoId(e.target.value)}>
+                {torneos.map(t => (
+                  <option key={t.id} value={t.id}>{t.nombre} ({t.estado})</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {mensajeExito && (
+            <div className="alert alert-success py-2 px-3 small mb-4">
+              <i className="bi bi-check-circle-fill me-1"></i> {mensajeExito}
+            </div>
+          )}
+
+          <div className="row g-4 mb-4">
+            {/* Bandeja de Inscripciones */}
+            <div className="col-lg-6">
+              <div className="tarjeta h-100">
+                <h5 className="text-white mb-3"><i className="bi bi-inbox me-2" style={{ color: 'var(--color-acento)' }}></i> Bandeja de Inscripciones</h5>
+                <div className="table-responsive">
+                  <table className="tabla-esports">
+                    <thead>
+                      <tr>
+                        <th>Participante</th>
+                        <th>Estado</th>
+                        <th className="text-end">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inscripciones.map(ins => (
+                        <tr key={ins.id}>
+                          <td>
+                            <strong>{ins.participanteNombre}</strong>
+                            <div className="small text-muted">Torneo #{ins.torneoId}</div>
+                          </td>
+                          <td>
+                            <span className={`badge ${ins.estado === 'APROBADA' ? 'bg-success' : 'bg-warning text-dark'}`}>
+                              {ins.estado}
+                            </span>
+                          </td>
+                          <td className="text-end">
+                            {ins.estado !== 'APROBADA' ? (
+                              <button className="btn btn-sm btn-success py-0 px-2" onClick={() => handleAprobarInscripcion(ins.id)}>
+                                Aprobar
+                              </button>
+                            ) : (
+                              <span className="text-muted small"><i className="bi bi-check"></i> Listo</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Aplicar Sanción */}
+            <div className="col-lg-6">
+              <div className="tarjeta h-100">
+                <h5 className="text-white mb-3"><i className="bi bi-shield-slash me-2 text-danger"></i> Aplicar Sanción Disciplinaria</h5>
+                <form onSubmit={handleAplicarSancion}>
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">ID Usuario Infractor</label>
+                    <input 
+                      type="number" 
+                      className="control-formulario" 
+                      value={usuarioSancionId} 
+                      onChange={(e) => setUsuarioSancionId(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Motivo de la Sanción</label>
+                    <input 
+                      type="text" 
+                      className="control-formulario" 
+                      placeholder="Ej: Inasistencia injustificada a partida oficial" 
+                      value={motivoSancion} 
+                      onChange={(e) => setMotivoSancion(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                  <button type="submit" className="boton-peligro w-100 py-2">
+                    <i className="bi bi-exclamation-octagon me-1"></i> Confirmar y Aplicar Sanción
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Registro y Validación de Resultados */}
+          <div className="tarjeta">
+            <h5 className="text-white mb-3"><i className="bi bi-trophy me-2" style={{ color: 'var(--color-primario)' }}></i> Registro y Validación de Partidas</h5>
+            <div className="table-responsive">
+              <table className="tabla-esports">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Ronda</th>
+                    <th>Enfrentamiento</th>
+                    <th>Marcador</th>
+                    <th>Estado</th>
+                    <th className="text-end">Operación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {partidas.map(p => (
+                    <tr key={p.id}>
+                      <td>#{p.id}</td>
+                      <td>Ronda {p.ronda}</td>
+                      <td>{p.participante1Nombre || 'TBD'} vs {p.participante2Nombre || 'TBD'}</td>
+                      <td><strong style={{ color: 'var(--color-acento)' }}>{p.puntaje1 || 0} - {p.puntaje2 || 0}</strong></td>
+                      <td>
+                        {p.resultadoValidado ? (
+                          <span className="badge bg-success"><i className="bi bi-check2"></i> Validado</span>
+                        ) : (
+                          <span className="badge bg-warning text-dark">Pendiente</span>
+                        )}
+                      </td>
+                      <td className="text-end">
+                        {!p.resultadoValidado && p.participante1Nombre && p.participante2Nombre ? (
+                          <button className="boton-acento py-1 px-2" style={{ fontSize: '12px' }} onClick={() => handleAbrirResultado(p)}>
+                            Registrar Marcador
+                          </button>
+                        ) : (
+                          <span className="text-muted small">Cerrada</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Modal / Formulario de Registro de Resultado */}
+          {partidaEditando && (
+            <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'rgba(0,0,0,0.75)', zIndex: 2000 }}>
+              <div className="tarjeta p-4" style={{ width: '460px', maxWidth: '90%' }}>
+                <h4 className="text-white mb-3">Registrar Marcador: Partida #{partidaEditando.id}</h4>
+                <form onSubmit={handleGuardarResultado}>
+                  <div className="row g-3 mb-3">
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">{partidaEditando.participante1Nombre}</label>
+                      <input type="number" min="0" className="control-formulario" value={puntaje1} onChange={(e) => setPuntaje1(e.target.value)} required />
+                    </div>
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">{partidaEditando.participante2Nombre}</label>
+                      <input type="number" min="0" className="control-formulario" value={puntaje2} onChange={(e) => setPuntaje2(e.target.value)} required />
+                    </div>
+                  </div>
+
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Ganador Oficial de la Partida</label>
+                    <select className="control-formulario" value={ganadorId} onChange={(e) => setGanadorId(e.target.value)}>
+                      <option value={partidaEditando.participante1Id}>{partidaEditando.participante1Nombre}</option>
+                      <option value={partidaEditando.participante2Id}>{partidaEditando.participante2Nombre}</option>
+                    </select>
+                  </div>
+
+                  <div className="d-flex gap-2 mt-4">
+                    <button type="button" className="boton-secundario flex-grow-1" onClick={() => setPartidaEditando(null)}>Cancelar</button>
+                    <button type="submit" className="boton-primario flex-grow-1">Validar Resultado</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- 9. VISTA PANEL ADMIN (EP3 - RUTA RESTRINGIDA) ---
+    function VistaPanelAdmin({ usuario }) {
+      const [juegos, setJuegos] = useState([]);
+      const [torneos, setTorneos] = useState([]);
+      const [nombreJuego, setNombreJuego] = useState('');
+      const [categoriaJuego, setCategoriaJuego] = useState('Tactical Shooter');
+      const [minIntegrantes, setMinIntegrantes] = useState(5);
+      const [nombreTorneo, setNombreTorneo] = useState('');
+      const [torneoJuegoId, setTorneoJuegoId] = useState('1');
+      const [cupoMaximo, setCupoMaximo] = useState(16);
+      const [fechaInicio, setFechaInicio] = useState('2026-10-01');
+      const [fechaCierre, setFechaCierre] = useState('2026-09-28');
+      const [mensajeExito, setMensajeExito] = useState('');
+
+      useEffect(() => {
+        setJuegos(window.MockData?.MOCK_JUEGOS || []);
+        setTorneos(window.MockData?.MOCK_TORNEOS || []);
+      }, []);
+
+      if (!usuario || usuario.rol !== 'ADMINISTRADOR') {
+        return (
+          <div className="container py-5 text-center">
+            <div className="tarjeta max-w-md mx-auto py-5">
+              <i className="bi bi-shield-lock display-3 text-danger mb-3 d-block"></i>
+              <h3 className="text-white">Acceso Restringido (403 Forbidden)</h3>
+              <p className="text-muted">Esta ruta es exclusiva para Administradores del sistema.</p>
+            </div>
+          </div>
+        );
+      }
+
+      const handleCrearJuego = (e) => {
+        e.preventDefault();
+        if (!nombreJuego) return;
+        const nuevo = {
+          id: Date.now(),
+          nombre: nombreJuego,
+          categoria: categoriaJuego,
+          minimoPorEquipo: Number(minIntegrantes),
+          tamanoEquipo: Number(minIntegrantes),
+          descripcion: 'Juego habilitado para torneos oficiales.',
+          activo: true
+        };
+        window.MockData.MOCK_JUEGOS.push(nuevo);
+        setJuegos([...juegos, nuevo]);
+        setNombreJuego('');
+        setMensajeExito(`Juego ${nuevo.nombre} agregado al catálogo oficial.`);
+        setTimeout(() => setMensajeExito(''), 3000);
+      };
+
+      const handleCrearTorneo = (e) => {
+        e.preventDefault();
+        if (!nombreTorneo) return;
+        if (new Date(fechaInicio).getTime() <= new Date(fechaCierre).getTime()) {
+          alert('La fecha de inicio debe ser posterior al cierre de inscripción.');
+          return;
+        }
+
+        const jObj = juegos.find(j => String(j.id) === String(torneoJuegoId));
+        const nuevo = {
+          id: Date.now(),
+          nombre: nombreTorneo,
+          juegoId: Number(torneoJuegoId),
+          juegoNombre: jObj?.nombre || 'Juego Competitivo',
+          cupoMaximo: Number(cupoMaximo),
+          cuposOcupados: 0,
+          fechaInicio: `${fechaInicio}T18:00:00`,
+          fechaFin: `${fechaInicio}T23:00:00`,
+          fechaCierreInscripcion: `${fechaCierre}T23:59:59`,
+          modalidad: jObj?.minimoPorEquipo === 1 ? 'INDIVIDUAL' : 'EQUIPO',
+          estado: 'ABIERTO',
+          premioTotal: '$1,000,000 CLP'
+        };
+
+        window.MockData.MOCK_TORNEOS.push(nuevo);
+        setTorneos([...torneos, nuevo]);
+        setNombreTorneo('');
+        setMensajeExito(`Torneo ${nuevo.nombre} creado con éxito.`);
+        setTimeout(() => setMensajeExito(''), 3000);
+      };
+
+      return (
+        <div className="container py-4">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <span className="badge bg-danger mb-1"><i className="bi bi-shield-lock-fill"></i> Nivel Máximo: {usuario.rol}</span>
+              <h2 className="text-white mb-0">Panel de Administración General</h2>
+            </div>
+          </div>
+
+          {mensajeExito && (
+            <div className="alert alert-success py-2 px-3 small mb-4">
+              <i className="bi bi-check-circle-fill me-1"></i> {mensajeExito}
+            </div>
+          )}
+
+          <div className="row g-4 mb-4">
+            {/* Mantenedor de Juegos */}
+            <div className="col-lg-6">
+              <div className="tarjeta h-100">
+                <h4 className="text-white mb-3"><i className="bi bi-controller me-2" style={{ color: 'var(--color-primario)' }}></i> Mantenedor de Juegos</h4>
+                <form onSubmit={handleCrearJuego} className="mb-4">
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Nombre del Título</label>
+                    <input type="text" className="control-formulario" placeholder="Ej: CS2, Valorant, Dota 2..." value={nombreJuego} onChange={(e) => setNombreJuego(e.target.value)} required />
+                  </div>
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Categoría</label>
+                      <input type="text" className="control-formulario" value={categoriaJuego} onChange={(e) => setCategoriaJuego(e.target.value)} />
+                    </div>
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Min. Integrantes</label>
+                      <input type="number" min="1" max="10" className="control-formulario" value={minIntegrantes} onChange={(e) => setMinIntegrantes(e.target.value)} />
+                    </div>
+                  </div>
+                  <button type="submit" className="boton-primario w-100 py-2">Registrar Juego</button>
+                </form>
+
+                <h6 className="text-white mb-2">Juegos Habilitados:</h6>
+                <div className="d-flex flex-column gap-2">
+                  {juegos.map(j => (
+                    <div key={j.id} className="p-2 rounded d-flex justify-content-between align-items-center" style={{ backgroundColor: '#120c22' }}>
+                      <span className="text-white">{j.nombre} ({j.minimoPorEquipo}v{j.minimoPorEquipo})</span>
+                      <span className="badge bg-success">Activo</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Crear Torneo */}
+            <div className="col-lg-6">
+              <div className="tarjeta h-100">
+                <h4 className="text-white mb-3"><i className="bi bi-trophy-fill me-2" style={{ color: 'var(--color-acento)' }}></i> Crear y Configurar Torneo</h4>
+                <form onSubmit={handleCrearTorneo}>
+                  <div className="campo-formulario">
+                    <label className="etiqueta-formulario">Nombre del Torneo</label>
+                    <input type="text" className="control-formulario" placeholder="Ej: Copa Apertura 2026" value={nombreTorneo} onChange={(e) => setNombreTorneo(e.target.value)} required />
+                  </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Juego</label>
+                      <select className="control-formulario" value={torneoJuegoId} onChange={(e) => setTorneoJuegoId(e.target.value)}>
+                        {juegos.map(j => <option key={j.id} value={j.id}>{j.nombre}</option>)}
+                      </select>
+                    </div>
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Cupo Máximo</label>
+                      <input type="number" min="2" max="128" className="control-formulario" value={cupoMaximo} onChange={(e) => setCupoMaximo(e.target.value)} required />
+                    </div>
+                  </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Cierre Inscripciones</label>
+                      <input type="date" className="control-formulario" value={fechaCierre} onChange={(e) => setFechaCierre(e.target.value)} required />
+                    </div>
+                    <div className="col-6">
+                      <label className="etiqueta-formulario">Fecha Inicio Partidas</label>
+                      <input type="date" className="control-formulario" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} required />
+                    </div>
+                  </div>
+
+                  <button type="submit" className="boton-primario w-100 py-2">
+                    Publicar Torneo Oficial
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- APP PRINCIPAL CON ENRUTAMIENTO DE CLIENTE ---
+    function App() {
+      const [vistaActual, setVistaActual] = useState('inicio');
+      const [torneoSeleccionadoId, setTorneoSeleccionadoId] = useState(1);
+      const [usuario, setUsuario] = useState(null);
+
+      useEffect(() => {
+        // Cargar sesión persistente desde localStorage
+        if (window.AuthService) {
+          const user = window.AuthService.getCurrentUser();
+          if (user) setUsuario(user);
+        }
+      }, []);
+
+      const irAInscripcion = (id) => {
+        setTorneoSeleccionadoId(id);
+        setVistaActual('inscripcion');
+      };
+
+      return (
+        <div className="d-flex flex-column min-vh-100">
+          <Cabecera 
+            vistaActual={vistaActual} 
+            setVistaActual={setVistaActual} 
+            usuario={usuario} 
+            setUsuario={setUsuario} 
+          />
+
+          <main className="flex-grow-1">
+            {vistaActual === 'inicio' && (
+              <VistaInicio 
+                setVistaActual={setVistaActual} 
+                onSeleccionarTorneo={setTorneoSeleccionadoId} 
+              />
+            )}
+            {vistaActual === 'torneos' && (
+              <VistaListadoTorneos 
+                setVistaActual={setVistaActual} 
+                onSeleccionarTorneo={setTorneoSeleccionadoId} 
+              />
+            )}
+            {vistaActual === 'detalle' && (
+              <VistaDetalleTorneo 
+                torneoId={torneoSeleccionadoId} 
+                setVistaActual={setVistaActual} 
+                onInscribir={irAInscripcion} 
+              />
+            )}
+            {vistaActual === 'inscripcion' && (
+              <VistaInscripcionTorneo 
+                torneoId={torneoSeleccionadoId} 
+                setVistaActual={setVistaActual} 
+                usuario={usuario} 
+              />
+            )}
+            {vistaActual === 'equipos' && (
+              <VistaGestionEquipo usuario={usuario} />
+            )}
+            {vistaActual === 'perfil' && (
+              <VistaPerfilJugador usuario={usuario} />
+            )}
+            {vistaActual === 'auth' && (
+              <VistaAutenticacion 
+                setVistaActual={setVistaActual} 
+                setUsuario={setUsuario} 
+              />
+            )}
+            {vistaActual === 'organizador' && (
+              <VistaPanelOrganizador usuario={usuario} />
+            )}
+            {vistaActual === 'admin' && (
+              <VistaPanelAdmin usuario={usuario} />
+            )}
+          </main>
+
+          <PieDePagina />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

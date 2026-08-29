@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSports Arena Manager - Inicio (EP1)</title>
+  <link rel="stylesheet" href="css/ep1-styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>eSports</span> Arena</a>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="activo">Inicio</a></li>
+        <li><a href="torneos.html">Torneos</a></li>
+        <li><a href="inscripcion.html">Inscripción</a></li>
+        <li><a href="equipo.html">Equipos</a></li>
+        <li><a href="perfil.html">Perfil</a></li>
+        <li><a href="../index.html" style="color:var(--color-acento)">⚡ App React (EP2/EP3)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="tarjeta" style="background: linear-gradient(135deg, #1C1430, #0E0B16); border: 1px solid var(--color-primario);">
+      <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">Plataforma Oficial de Torneos eSports</h1>
+      <p style="color: var(--color-texto-mutado); margin-bottom: 1.5rem;">Base navegable desarrollada con HTML5 semántico, CSS3 externo (Paleta 1) y JavaScript.</p>
+      <a href="torneos.html" class="boton-primario">Explorar Torneos Disponibles</a>
+    </section>
+
+    <section class="tarjeta">
+      <h2 style="margin-bottom: 1rem;">Transmisión Oficial de la Gran Final</h2>
+      <div style="max-width: 720px; margin: 0 auto;">
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+          <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Transmisión eSports" allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="margin-bottom: 1rem;">Torneos Destacados (Cargados por JS)</h2>
+      <div id="contenedor-destacados" class="grilla-tarjetas"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 eSports Arena Manager - DuocUC | Evaluación Parcial 1 (EP1)</p>
+  </footer>
+
+  <script src="js/ep1-data.js"></script>
+  <script>
+    renderizarTorneos("contenedor-destacados");
+  </script>
+</body>
+</html>
