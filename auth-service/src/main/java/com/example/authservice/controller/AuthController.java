@@ -7,6 +7,7 @@ import com.example.authservice.dto.AuthDtos.TokenResponse;
 import com.example.authservice.model.CuentaAcceso;
 import com.example.authservice.security.JwtService;
 import com.example.authservice.service.CuentaAccesoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Auth", description = "Autenticacion, JWT y cuentas de acceso")
 public class AuthController {
     private final CuentaAccesoService service;
     private final JwtService jwtService;
@@ -60,7 +62,7 @@ public class AuthController {
     }
 
     @PutMapping("/cuentas/{id}")
-    public CuentaAcceso actualizar(@PathVariable Long id, @RequestBody ActualizarCuentaRequest request) {
+    public CuentaAcceso actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarCuentaRequest request) {
         return service.actualizar(id, request);
     }
 

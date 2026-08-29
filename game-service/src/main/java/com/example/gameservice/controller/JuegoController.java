@@ -4,6 +4,7 @@ import com.example.gameservice.dto.JuegoDtos.JuegoRequest;
 import com.example.gameservice.dto.JuegoDtos.JuegoUpdate;
 import com.example.gameservice.model.Juego;
 import com.example.gameservice.service.JuegoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/juegos")
+@Tag(name = "Juegos", description = "Videojuegos habilitados para torneos")
 public class JuegoController {
     private final JuegoService service;
     public JuegoController(JuegoService service) { this.service = service; }
@@ -22,7 +24,7 @@ public class JuegoController {
     }
     @GetMapping public List<Juego> activos(@RequestParam(required = false, defaultValue = "false") boolean todos) { return todos ? service.listarTodos() : service.activos(); }
     @GetMapping("/{id}") public Juego buscar(@PathVariable Long id) { return service.buscar(id); }
-    @PutMapping("/{id}") public Juego actualizar(@PathVariable Long id, @RequestBody JuegoUpdate request) { return service.actualizar(id, request); }
+    @PutMapping("/{id}") public Juego actualizar(@PathVariable Long id, @Valid @RequestBody JuegoUpdate request) { return service.actualizar(id, request); }
     @PatchMapping("/{id}/desactivar") public Juego desactivar(@PathVariable Long id) { return service.desactivar(id); }
     @DeleteMapping("/{id}/desactivar") public Juego desactivarDelete(@PathVariable Long id) { return service.desactivar(id); }
 }

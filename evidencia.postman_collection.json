@@ -1,0 +1,1122 @@
+{
+  "info": {
+    "_postman_id": "ee2d9fe6-6309-46cd-aa40-99be484e3630",
+    "name": "evidencia",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53646610",
+    "_collection_link": "https://go.postman.co/collection/53646610-ee2d9fe6-6309-46cd-aa40-99be484e3630?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "http://localhost:8091/api/v1/notificaciones/1/leer",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"usuarioId\": 2,\r\n  \"tipo\": \"PREMIO\",\r\n  \"mensaje\": \"Tu equipo obtuvo el primer lugar en Copa Verano 2026\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8091/api/v1/notificaciones/1/leer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8091",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "1",
+            "leer"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8091/api/v1/notificaciones",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"usuarioId\": 2,\r\n  \"tipo\": \"PREMIO\",\r\n  \"mensaje\": \"Tu equipo obtuvo el primer lugar en Copa Verano 2026\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8091/api/v1/notificaciones",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8091",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8090/api/v1/premios/1/asignaciones",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"participanteId\": 1\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8090/api/v1/premios/1/asignaciones",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8090",
+          "path": [
+            "api",
+            "v1",
+            "premios",
+            "1",
+            "asignaciones"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8090/api/v1/premios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"posicion\": 1,\r\n  \"descripcion\": \"Medalla oro + premio simbolico\",\r\n  \"valor\": 100000\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8090/api/v1/premios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8090",
+          "path": [
+            "api",
+            "v1",
+            "premios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=FINALIZADO",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"puntos\": 0,\r\n  \"victorias\": 0,\r\n  \"derrotas\": 1,\r\n  \"diferencia\": -5,\r\n  \"resultadoValidado\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=FINALIZADO",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "v1",
+            "torneos",
+            "1",
+            "estado"
+          ],
+          "query": [
+            {
+              "key": "nuevoEstado",
+              "value": "FINALIZADO",
+              "disabled": false
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings/torneos/1/cerrar",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"puntos\": 0,\r\n  \"victorias\": 0,\r\n  \"derrotas\": 1,\r\n  \"diferencia\": -5,\r\n  \"resultadoValidado\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings/torneos/1/cerrar",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings",
+            "torneos",
+            "1",
+            "cerrar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings?torneoId=1",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"puntos\": 0,\r\n  \"victorias\": 0,\r\n  \"derrotas\": 1,\r\n  \"diferencia\": -5,\r\n  \"resultadoValidado\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings?torneoId=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings"
+          ],
+          "query": [
+            {
+              "key": "torneoId",
+              "value": "1",
+              "disabled": false
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings/2",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"puntos\": 0,\r\n  \"victorias\": 0,\r\n  \"derrotas\": 1,\r\n  \"diferencia\": -5,\r\n  \"resultadoValidado\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings/1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"puntos\": 3,\r\n  \"victorias\": 1,\r\n  \"derrotas\": 0,\r\n  \"diferencia\": 5,\r\n  \"resultadoValidado\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"participanteId\": 2\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8089/api/v1/rankings",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"participanteId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8089/api/v1/rankings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8089",
+          "path": [
+            "api",
+            "v1",
+            "rankings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8088/api/v1/resultados/1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"estadoValidacion\": \"VALIDADO\",\r\n  \"rolOrganizador\": true\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8088/api/v1/resultados/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8088",
+          "path": [
+            "api",
+            "v1",
+            "resultados",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8088/api/v1/resultados",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"partidaId\": 1,\r\n  \"ganadorId\": 1,\r\n  \"puntajeA\": 13,\r\n  \"puntajeB\": 8,\r\n  \"evidencia\": \"https://evidencia.demo/partida-1\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8088/api/v1/resultados",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8088",
+          "path": [
+            "api",
+            "v1",
+            "resultados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8086/api/v1/partidas",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"participanteAId\": 1,\r\n  \"participanteBId\": 2,\r\n  \"ronda\": 1,\r\n  \"fechaHora\": \"2026-06-02T18:00:00\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8086/api/v1/partidas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8086",
+          "path": [
+            "api",
+            "v1",
+            "partidas"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8084/api/v1/inscripciones/torneo/1",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"equipoId\": 2,\r\n  \"tipoParticipante\": \"EQUIPO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8084/api/v1/inscripciones/torneo/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "v1",
+            "inscripciones",
+            "torneo",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8084/api/v1/inscripciones",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"equipoId\": 2,\r\n  \"tipoParticipante\": \"EQUIPO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8084/api/v1/inscripciones",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "v1",
+            "inscripciones"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8084/api/v1/inscripciones",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"equipoId\": 1,\r\n  \"tipoParticipante\": \"EQUIPO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8084/api/v1/inscripciones",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "v1",
+            "inscripciones"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8083/api/v1/torneos",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Copa Verano 2026\",\r\n  \"juegoId\": 1,\r\n  \"fechaInicio\": \"2026-06-01T10:00:00\",\r\n  \"fechaFin\": \"2026-06-30T20:00:00\",\r\n  \"fechaCierreInscripcion\": \"2026-05-28T23:59:00\",\r\n  \"cupoMaximo\": 16,\r\n  \"modalidad\": \"EQUIPO\",\r\n  \"estado\": \"ABIERTO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/v1/torneos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "v1",
+            "torneos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8083/api/v1/torneos",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"equipoId\": 1,\r\n  \"tipoParticipante\": \"EQUIPO\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/v1/torneos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "v1",
+            "torneos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8084/api/v1/inscripciones",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"torneoId\": 1,\r\n  \"equipoId\": 1,\r\n  \"tipoParticipante\": \"EQUIPO\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8084/api/v1/inscripciones",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "v1",
+            "inscripciones"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8082/api/v1/equipos/2/puede-inscribirse",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Team Beta\",\r\n  \"capitanId\": 4,\r\n  \"juegoPrincipalId\": 1,\r\n  \"integrantes\": [\r\n    {\r\n      \"usuarioId\": 4,\r\n      \"rolDentroEquipo\": \"CAPITAN\"\r\n    },\r\n    {\r\n      \"usuarioId\": 5,\r\n      \"rolDentroEquipo\": \"JUGADOR\"\r\n    }\r\n  ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/v1/equipos/2/puede-inscribirse",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8082",
+          "path": [
+            "api",
+            "v1",
+            "equipos",
+            "2",
+            "puede-inscribirse"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8082/api/v1/equipos/1/puede-inscribirse",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Team Beta\",\r\n  \"capitanId\": 4,\r\n  \"juegoPrincipalId\": 1,\r\n  \"integrantes\": [\r\n    {\r\n      \"usuarioId\": 4,\r\n      \"rolDentroEquipo\": \"CAPITAN\"\r\n    },\r\n    {\r\n      \"usuarioId\": 5,\r\n      \"rolDentroEquipo\": \"JUGADOR\"\r\n    }\r\n  ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/v1/equipos/1/puede-inscribirse",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8082",
+          "path": [
+            "api",
+            "v1",
+            "equipos",
+            "1",
+            "puede-inscribirse"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8082/api/v1/equipos",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Team Beta\",\r\n  \"capitanId\": 4,\r\n  \"juegoPrincipalId\": 1,\r\n  \"integrantes\": [\r\n    {\r\n      \"usuarioId\": 4,\r\n      \"rolDentroEquipo\": \"CAPITAN\"\r\n    },\r\n    {\r\n      \"usuarioId\": 5,\r\n      \"rolDentroEquipo\": \"JUGADOR\"\r\n    }\r\n  ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/v1/equipos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8082",
+          "path": [
+            "api",
+            "v1",
+            "equipos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8082/api/v1/equipos",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Team Alpha\",\r\n  \"capitanId\": 2,\r\n  \"juegoPrincipalId\": 1,\r\n  \"integrantes\": [\r\n    {\r\n      \"usuarioId\": 2,\r\n      \"rolDentroEquipo\": \"CAPITAN\"\r\n    },\r\n    {\r\n      \"usuarioId\": 3,\r\n      \"rolDentroEquipo\": \"JUGADOR\"\r\n    }\r\n  ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/v1/equipos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8082",
+          "path": [
+            "api",
+            "v1",
+            "equipos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8087/api/v1/juegos",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Valorant\",\r\n  \"genero\": \"FPS\",\r\n  \"modalidad\": \"EQUIPO\",\r\n  \"jugadoresPorEquipo\": 5,\r\n  \"reglasGenerales\": \"Formato BO3\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8087/api/v1/juegos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8087",
+          "path": [
+            "api",
+            "v1",
+            "juegos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8081/api/v1/usuarios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Jugador Cuatro\",\r\n  \"nickname\": \"player4\",\r\n  \"email\": \"player4@example.com\",\r\n  \"rol\": \"JUGADOR\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8081/api/v1/usuarios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Jugador Tres\",\r\n  \"nickname\": \"player3\",\r\n  \"email\": \"player3@example.com\",\r\n  \"rol\": \"JUGADOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8081/api/v1/usuarios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Jugador Dos\",\r\n  \"nickname\": \"player2\",\r\n  \"email\": \"player2@example.com\",\r\n  \"rol\": \"JUGADOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8081/api/v1/usuarios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Jugador Uno\",\r\n  \"nickname\": \"player1\",\r\n  \"email\": \"player1@example.com\",\r\n  \"rol\": \"JUGADOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "usuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/v1/auth/login",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"admin@example.com\",\r\n  \"password\": \"Admin1234\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/v1/auth/registro",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"admin@example.com\",\r\n  \"password\": \"Admin1234\",\r\n  \"rol\": \"ADMINISTRADOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/registro",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "registro"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8081/api/v1/usuarios",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nombre\": \"Admin Uno\",\r\n  \"nickname\": \"admin1\",\r\n  \"email\": \"admin@example.com\",\r\n  \"rol\": \"ADMINISTRADOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "usuarios"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "url",
+      "value": "https://0c8aeb23-8ee6-4c55-ad88-40fd162982d2.mock.pstmn.io"
+    }
+  ]
+}

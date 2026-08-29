@@ -1,0 +1,548 @@
+- eSports Arena Manager
+Orden recomendado para probar el flujo completo
+
+Notas:
+- Antes de probar, iniciar XAMPP y levantar MySQL.
+- Los IDs usados abajo asumen una base limpia.
+- Si ya probaste antes, limpia las tablas o ajusta los IDs segun lo creado.
+
+============================================================
+PASO 1 - Crear usuario administrador
+============================================================
+Metodo: POST
+URL: http://localhost:8081/api/v1/usuarios
+Body JSON:
+
+{
+  "nombre": "Admin Uno",
+  "nickname": "admin1",
+  "email": "admin@example.com",
+  "rol": "ADMINISTRADOR"
+}
+
+Resultado esperado:
+- Usuario creado con id 1.
+
+============================================================
+PASO 2 - Crear cuenta de acceso para administrador
+============================================================
+Metodo: POST
+URL: http://localhost:8080/api/v1/auth/registro
+Body JSON:
+
+{
+  "email": "admin@example.com",
+  "password": "Admin1234",
+  "rol": "ADMINISTRADOR"
+}
+
+Resultado esperado:
+- Cuenta creada.
+- Password guardada con BCrypt.
+
+============================================================
+PASO 3 - Login administrador
+============================================================
+Metodo: POST
+URL: http://localhost:8080/api/v1/auth/login
+Body JSON:
+
+{
+  "email": "admin@example.com",
+  "password": "Admin1234"
+}
+
+Resultado esperado:
+- Respuesta con token JWT.
+
+============================================================
+PASO 4 - Crear jugador 1
+============================================================
+Metodo: POST
+URL: http://localhost:8081/api/v1/usuarios
+Body JSON:
+
+{
+  "nombre": "Jugador Uno",
+  "nickname": "player1",
+  "email": "player1@example.com",
+  "rol": "JUGADOR"
+}
+
+Resultado esperado:
+- Usuario creado con id 2.
+
+============================================================
+PASO 5 - Crear jugador 2
+============================================================
+Metodo: POST
+URL: http://localhost:8081/api/v1/usuarios
+Body JSON:
+
+{
+  "nombre": "Jugador Dos",
+  "nickname": "player2",
+  "email": "player2@example.com",
+  "rol": "JUGADOR"
+}
+
+Resultado esperado:
+- Usuario creado con id 3.
+
+============================================================
+PASO 6 - Crear jugador 3
+============================================================
+Metodo: POST
+URL: http://localhost:8081/api/v1/usuarios
+Body JSON:
+
+{
+  "nombre": "Jugador Tres",
+  "nickname": "player3",
+  "email": "player3@example.com",
+  "rol": "JUGADOR"
+}
+
+Resultado esperado:
+- Usuario creado con id 4.
+
+============================================================
+PASO 7 - Crear jugador 4
+============================================================
+Metodo: POST
+URL: http://localhost:8081/api/v1/usuarios
+Body JSON:
+
+{
+  "nombre": "Jugador Cuatro",
+  "nickname": "player4",
+  "email": "player4@example.com",
+  "rol": "JUGADOR"
+}
+
+Resultado esperado:
+- Usuario creado con id 5.
+
+============================================================
+PASO 8 - Crear juego
+============================================================
+Metodo: POST
+URL: http://localhost:8087/api/v1/juegos
+Body JSON:
+
+{
+  "nombre": "Valorant",
+  "genero": "FPS",
+  "modalidad": "EQUIPO",
+  "jugadoresPorEquipo": 5,
+  "reglasGenerales": "Formato BO3"
+}
+
+Resultado esperado:
+- Juego creado con id 1.
+- Estado ACTIVO.
+
+============================================================
+PASO 9 - Crear torneo abierto
+============================================================
+Metodo: POST
+URL: http://localhost:8083/api/v1/torneos
+Body JSON:
+
+{
+  "nombre": "Copa Verano 2026",
+  "juegoId": 1,
+  "fechaInicio": "2026-06-01T10:00:00",
+  "fechaFin": "2026-06-30T20:00:00",
+  "fechaCierreInscripcion": "2026-05-28T23:59:00",
+  "cupoMaximo": 16,
+  "modalidad": "EQUIPO",
+  "estado": "ABIERTO"
+}
+
+Resultado esperado:
+- Torneo creado con id 1.
+- Estado ABIERTO.
+
+============================================================
+PASO 10 - Crear equipo 1 con integrantes
+============================================================
+Metodo: POST
+URL: http://localhost:8082/api/v1/equipos
+Body JSON:
+
+{
+  "nombre": "Team Alpha",
+  "capitanId": 2,
+  "juegoPrincipalId": 1,
+  "integrantes": [
+    {
+      "usuarioId": 2,
+      "rolDentroEquipo": "CAPITAN"
+    },
+    {
+      "usuarioId": 3,
+      "rolDentroEquipo": "JUGADOR"
+    }
+  ]
+}
+
+Resultado esperado:
+- Equipo creado con id 1.
+- Estado ACTIVO.
+- Integrantes no vacios.
+
+============================================================
+PASO 11 - Crear equipo 2 con integrantes
+============================================================
+Metodo: POST
+URL: http://localhost:8082/api/v1/equipos
+Body JSON:
+
+{
+  "nombre": "Team Beta",
+  "capitanId": 4,
+  "juegoPrincipalId": 1,
+  "integrantes": [
+    {
+      "usuarioId": 4,
+      "rolDentroEquipo": "CAPITAN"
+    },
+    {
+      "usuarioId": 5,
+      "rolDentroEquipo": "JUGADOR"
+    }
+  ]
+}
+
+Resultado esperado:
+- Equipo creado con id 2.
+- Estado ACTIVO.
+- Integrantes no vacios.
+
+============================================================
+PASO 12 - Verificar si equipo 1 puede inscribirse
+============================================================
+Metodo: GET
+URL: http://localhost:8082/api/v1/equipos/1/puede-inscribirse
+Body:
+Sin body.
+
+Resultado esperado:
+
+{
+  "puedeInscribirse": true
+}
+
+============================================================
+PASO 13 - Verificar si equipo 2 puede inscribirse
+============================================================
+Metodo: GET
+URL: http://localhost:8082/api/v1/equipos/2/puede-inscribirse
+Body:
+Sin body.
+
+Resultado esperado:
+
+{
+  "puedeInscribirse": true
+}
+
+============================================================
+PASO 14 - Inscribir equipo 1
+============================================================
+Metodo: POST
+URL: http://localhost:8084/api/v1/inscripciones
+Body JSON:
+
+{
+  "torneoId": 1,
+  "equipoId": 1,
+  "tipoParticipante": "EQUIPO"
+}
+
+Resultado esperado:
+- Inscripcion creada con id 1.
+- Estado ACEPTADA.
+
+============================================================
+PASO 15 - Inscribir equipo 2
+============================================================
+Metodo: POST
+URL: http://localhost:8084/api/v1/inscripciones
+Body JSON:
+
+{
+  "torneoId": 1,
+  "equipoId": 2,
+  "tipoParticipante": "EQUIPO"
+}
+
+Resultado esperado:
+- Inscripcion creada con id 2.
+- Estado ACEPTADA.
+
+============================================================
+PASO 16 - Listar inscripciones del torneo
+============================================================
+Metodo: GET
+URL: http://localhost:8084/api/v1/inscripciones/torneo/1
+Body:
+Sin body.
+
+Resultado esperado:
+- Deben aparecer las inscripciones de Team Alpha y Team Beta.
+
+============================================================
+PASO 17 - Crear partida
+============================================================
+Metodo: POST
+URL: http://localhost:8086/api/v1/partidas
+Body JSON:
+
+{
+  "torneoId": 1,
+  "participanteAId": 1,
+  "participanteBId": 2,
+  "ronda": 1,
+  "fechaHora": "2026-06-02T18:00:00"
+}
+
+Resultado esperado:
+- Partida creada con id 1.
+- Estado PROGRAMADA.
+
+============================================================
+PASO 18 - Crear resultado
+============================================================
+Metodo: POST
+URL: http://localhost:8088/api/v1/resultados
+Body JSON:
+
+{
+  "partidaId": 1,
+  "ganadorId": 1,
+  "puntajeA": 13,
+  "puntajeB": 8,
+  "evidencia": "https://evidencia.demo/partida-1"
+}
+
+Resultado esperado:
+- Resultado creado con id 1.
+- Estado PENDIENTE.
+
+============================================================
+PASO 19 - Validar resultado
+============================================================
+Metodo: PUT
+URL: http://localhost:8088/api/v1/resultados/1
+Body JSON:
+
+{
+  "estadoValidacion": "VALIDADO",
+  "rolOrganizador": true
+}
+
+Resultado esperado:
+- Resultado queda VALIDADO.
+
+============================================================
+PASO 20 - Crear ranking para equipo 1
+============================================================
+Metodo: POST
+URL: http://localhost:8089/api/v1/rankings
+Body JSON:
+
+{
+  "torneoId": 1,
+  "participanteId": 1
+}
+
+Resultado esperado:
+- Ranking creado para participante 1.
+
+============================================================
+PASO 21 - Crear ranking para equipo 2
+============================================================
+Metodo: POST
+URL: http://localhost:8089/api/v1/rankings
+Body JSON:
+
+{
+  "torneoId": 1,
+  "participanteId": 2
+}
+
+Resultado esperado:
+- Ranking creado para participante 2.
+
+============================================================
+PASO 22 - Actualizar ranking equipo 1
+============================================================
+Metodo: PUT
+URL: http://localhost:8089/api/v1/rankings/1
+Body JSON:
+
+{
+  "puntos": 3,
+  "victorias": 1,
+  "derrotas": 0,
+  "diferencia": 5,
+  "resultadoValidado": true
+}
+
+Resultado esperado:
+- Equipo 1 queda primero.
+
+============================================================
+PASO 23 - Actualizar ranking equipo 2
+============================================================
+Metodo: PUT
+URL: http://localhost:8089/api/v1/rankings/2
+Body JSON:
+
+{
+  "puntos": 0,
+  "victorias": 0,
+  "derrotas": 1,
+  "diferencia": -5,
+  "resultadoValidado": true
+}
+
+Resultado esperado:
+- Equipo 2 queda debajo del equipo 1.
+
+============================================================
+PASO 24 - Listar ranking del torneo
+============================================================
+Metodo: GET
+URL: http://localhost:8089/api/v1/rankings?torneoId=1
+Body:
+Sin body.
+
+Resultado esperado:
+- Ranking ordenado por posicion.
+
+============================================================
+PASO 25 - Cerrar ranking
+============================================================
+Metodo: PATCH
+URL: http://localhost:8089/api/v1/rankings/torneos/1/cerrar
+Body:
+Sin body.
+
+Resultado esperado:
+- Ranking queda cerrado.
+
+============================================================
+PASO 26 - Finalizar torneo
+============================================================
+Metodo: PATCH
+URL: http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=FINALIZADO
+Body:
+Sin body.
+
+Resultado esperado:
+- Torneo queda FINALIZADO.
+
+============================================================
+PASO 27 - Crear premio
+============================================================
+Metodo: POST
+URL: http://localhost:8090/api/v1/premios
+Body JSON:
+
+{
+  "torneoId": 1,
+  "posicion": 1,
+  "descripcion": "Medalla oro + premio simbolico",
+  "valor": 100000
+}
+
+Resultado esperado:
+- Premio creado con id 1.
+- Estado DISPONIBLE.
+
+============================================================
+PASO 28 - Asignar premio
+============================================================
+Metodo: POST
+URL: http://localhost:8090/api/v1/premios/1/asignaciones
+Body JSON:
+
+{
+  "participanteId": 1
+}
+
+Resultado esperado:
+- Premio asignado al equipo 1.
+- Premio cambia a ASIGNADO.
+
+============================================================
+PASO 29 - Crear notificacion
+============================================================
+Metodo: POST
+URL: http://localhost:8091/api/v1/notificaciones
+Body JSON:
+
+{
+  "usuarioId": 2,
+  "tipo": "PREMIO",
+  "mensaje": "Tu equipo obtuvo el primer lugar en Copa Verano 2026"
+}
+
+Resultado esperado:
+- Notificacion creada con id 1.
+- leida = false.
+
+============================================================
+PASO 30 - Marcar notificacion como leida
+============================================================
+Metodo: PATCH
+URL: http://localhost:8091/api/v1/notificaciones/1/leer
+Body:
+Sin body.
+
+Resultado esperado:
+- Notificacion leida = true.
+- Estado LEIDA.
+
+============================================================
+CONSULTAS UTILES
+============================================================
+
+Listar usuarios:
+GET http://localhost:8081/api/v1/usuarios
+
+Listar cuentas:
+GET http://localhost:8080/api/v1/auth/cuentas
+
+Listar juegos activos:
+GET http://localhost:8087/api/v1/juegos
+
+Listar todos los juegos:
+GET http://localhost:8087/api/v1/juegos?todos=true
+
+Listar torneos:
+GET http://localhost:8083/api/v1/torneos
+
+Listar equipos:
+GET http://localhost:8082/api/v1/equipos
+
+Listar inscripciones por torneo:
+GET http://localhost:8084/api/v1/inscripciones/torneo/1
+
+Listar partidas:
+GET http://localhost:8086/api/v1/partidas?torneoId=1
+
+Listar resultados:
+GET http://localhost:8088/api/v1/resultados?partidaId=1
+
+Listar ranking:
+GET http://localhost:8089/api/v1/rankings?torneoId=1
+
+Listar premios:
+GET http://localhost:8090/api/v1/premios?torneoId=1
+
+Listar notificaciones:
+GET http://localhost:8091/api/v1/notificaciones?usuarioId=2

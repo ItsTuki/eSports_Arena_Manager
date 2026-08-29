@@ -1,10 +1,8 @@
-# eSports Arena Manager – Backend Microservicios
+# eSports Arena Manager
 
-> **Asignatura:** Desarrollo FullStack I DSY1103  
-> **Institución:** DuocUC  
-> **Arquitectura:** Microservicios con Spring Boot 3.2.5 + Java 21
-
----
+Asignatura: Desarrollo FullStack I DSY1103  
+Institución:DuocUC  
+Arquitectura: Microservicios con Spring Boot 3.2.5 + Java 21
 
 ## Integrantes del equipo
 
@@ -20,6 +18,8 @@
 
 | Servicio             | Puerto | Base de datos      | MySQL puerto |
 |----------------------|--------|--------------------|-------------|
+| `discovery-server`   | 8761   | No aplica          | No aplica   |
+| `api-gateway`        | 8070   | No aplica          | No aplica   |
 | `auth-service`       | 8080   | `db_auth`          | 3306        |
 | `user-service`       | 8081   | `db_users`         | 3306        |
 | `team-service`       | 8082   | `db_teams`         | 3306        |
@@ -33,41 +33,47 @@
 | `prize-service`      | 8090   | `db_prizes`        | 3306        |
 | `notification-service` | 8091 | `db_notifications` | 3306        |
 
----
 
-auth-service ──────────────────────────► user-service
-                                              ▲
-game-service ◄──── tournament-service         │
-     ▲                    ▲              team-service
-     │                    │                  ▲
-     └────── team-service  │                 │
-                           │         registration-service
-                    match-service ──────────►│
-                           │         sanction-service
-                           ▼
-                    result-service
-                     │        │
-                     ▼        ▼
-               ranking-service  prize-service
-                                     │
-                              notification-service
+## Documentación Swagger / OpenAPI
 
----
+Cada microservicio expone su documentación Swagger UI en la ruta `/doc/swagger-ui/index.html`.
 
-## Flujo integrador principal
+| Servicio             | Swagger UI |
+|----------------------|------------|
+| `auth-service`       | `http://localhost:8080/doc/swagger-ui/index.html` |
+| `user-service`       | `http://localhost:8081/doc/swagger-ui/index.html` |
+| `team-service`       | `http://localhost:8082/doc/swagger-ui/index.html` |
+| `tournament-service` | `http://localhost:8083/doc/swagger-ui/index.html` |
+| `registration-service` | `http://localhost:8084/doc/swagger-ui/index.html` |
+| `sanction-service`   | `http://localhost:8085/doc/swagger-ui/index.html` |
+| `match-service`      | `http://localhost:8086/doc/swagger-ui/index.html` |
+| `game-service`       | `http://localhost:8087/doc/swagger-ui/index.html` |
+| `result-service`     | `http://localhost:8088/doc/swagger-ui/index.html` |
+| `ranking-service`    | `http://localhost:8089/doc/swagger-ui/index.html` |
+| `prize-service`      | `http://localhost:8090/doc/swagger-ui/index.html` |
+| `notification-service` | `http://localhost:8091/doc/swagger-ui/index.html` |
 
+También queda disponible el JSON OpenAPI en `/v3/api-docs` dentro de cada microservicio.
 
-1. Admin registra juego (game-service)
-2. Admin crea torneo asociado al juego (tournament-service)
-3. Jugadores crean equipos (team-service)
-4. registration-service valida cupo + sanciones + estado torneo → inscribe
-5. match-service genera partidas entre inscritos
-6. result-service registra y valida resultados
-7. ranking-service recalcula posiciones
-8. prize-service asigna premios → notification-service notifica
+## API Gateway, Eureka y HATEOAS
 
+El proyecto incorpora un servidor Eureka para descubrimiento de servicios y un API Gateway como punto unico de entrada.
 
----
+| Componente | URL |
+|------------|-----|
+| Eureka Dashboard | `http://localhost:8761` |
+| API Gateway | `http://localhost:8070` |
+
+Las rutas publicas del Gateway mantienen los mismos paths `/api/v1` de cada microservicio. Ejemplos:
+
+```text
+http://localhost:8070/api/v1/usuarios
+http://localhost:8070/api/v1/equipos
+http://localhost:8070/api/v1/torneos
+http://localhost:8070/api/v1/inscripciones
+```
+
+Cada microservicio tambien agrega enlaces HATEOAS en la cabecera HTTP `Link` para las rutas `/api/v1/**`, sin cambiar el JSON de respuesta. Esto permite mantener compatibilidad con Feign y Postman.
 
 ## Instrucciones de ejecución
 
@@ -103,26 +109,31 @@ db_prizes
 db_notifications
 ```
 
-Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos. Si XAMPP tiene contraseña configurada, definir:
-
-```text
-DB_USERNAME=root
-DB_PASSWORD=tu_clave
-```
+Los `application.properties` usan `createDatabaseIfNotExist=true`, por lo que Hibernate puede crear las bases si el usuario `root` tiene permisos.
 
 ### Ejecución de microservicios
 
 1. Abrir XAMPP.
 2. Iniciar el servicio **MySQL**.
-3. Ejecutar cada microservicio desde su carpeta:
+3. Ejecutar primero el servidor Eureka.
+
+En Windows, usar el wrapper Maven incluido desde la raíz del proyecto:
+
+```bash
+cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
+.\mvnw.cmd -pl discovery-server spring-boot:run
+```
+
+4. Ejecutar cada microservicio desde su carpeta:
 
 ```bash
 mvn spring-boot:run
 ```
 
-4. Orden recomendado de ejecución:
+5. Orden recomendado de ejecución:
 
 ```text
+discovery-server
 user-service
 auth-service
 game-service
@@ -135,12 +146,21 @@ result-service
 ranking-service
 prize-service
 notification-service
+api-gateway
 ```
 
-5. Probar los flujos principales con la colección
+6. Ejecutar el Gateway al final.
+
+En Windows, usar:
+
+```bash
+cd C:\Users\tuki\OneDrive\Escritorio\eSports_Arena_Manager
+.\mvnw.cmd -pl api-gateway spring-boot:run
+```
+
+7. Probar los flujos principales con la colección de postman(collecion de postman.txt), usando `http://localhost:8070` si se quiere probar por Gateway.
 
 
----
 
 ## Endpoints principales por microservicio
 
@@ -206,55 +226,6 @@ notification-service
 
 ---
 
-## Ejemplo de flujo completo con curl
-
-```bash
-# 1. Crear juego
-curl -X POST http://localhost:8087/api/v1/juegos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Valorant","genero":"FPS","modalidad":"EQUIPO","jugadoresPorEquipo":5}'
-
-# 2. Crear torneo
-curl -X POST http://localhost:8083/api/v1/torneos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Copa Verano 2026","juegoId":1,"fechaInicio":"2026-06-01",
-       "fechaFin":"2026-06-30","fechaFinInscripcion":"2026-05-28",
-       "cupoMaximo":16,"modalidad":"ELIMINACION_DIRECTA"}'
-
-# 3. Abrir torneo
-curl -X PATCH "http://localhost:8083/api/v1/torneos/1/estado?nuevoEstado=ABIERTO"
-
-# 4. Crear equipo
-curl -X POST http://localhost:8082/api/v1/equipos \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Team Alpha","capitanId":1,"juegoPrincipalId":1}'
-
-# 5. Inscribir equipo
-curl -X POST http://localhost:8084/api/v1/inscripciones \
-  -H "Content-Type: application/json" \
-  -d '{"torneoId":1,"equipoId":1,"tipoParticipante":"EQUIPO"}'
-```
-
----
-
-
----
-
-## Documentación Swagger
-
-Agregar en cada `pom.xml`:
-```xml
-<dependency>
-    <groupId>org.springdoc</groupId>
-    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    <version>2.3.0</version>
-</dependency>
-```
-
-Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
-
----
-
 ## Evidencias requeridas
 
 - [x] Repositorio GitHub organizado por microservicios
@@ -262,6 +233,4 @@ Luego acceder a: `http://localhost:<puerto>/swagger-ui/index.html`
 - [x] Colección Postman exportada 
 - [x] Diagrama de ecosistema 
 - [ ] Tablero Trello con tareas distribuidas
-- [ ] Swagger/OpenAPI 
-- [ ] API Gateway configurado 
 
