@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestion y creacion de escuadras eSports. Agrega integrantes, asigna capitanes y administra el roster oficial.">
+    <title>eSports Arena Manager | Gestion de Equipos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Encabezado Principal de Navegacion -->
+    <header class="cabecera-principal" role="banner">
+        <div class="contenedor">
+            <nav class="barra-nav" aria-label="Navegacion principal">
+                <a href="index.html" class="marca-logo" aria-label="Inicio eSports Arena Manager">
+                    <span>eSports<span class="acento">Arena</span></span>
+                </a>
+
+                <ul class="menu-navegacion" role="menubar">
+                    <li role="none"><a href="index.html" role="menuitem">Inicio</a></li>
+                    <li role="none"><a href="torneos.html" role="menuitem">Torneos</a></li>
+                    <li role="none"><a href="inscripcion.html" role="menuitem">Inscripcion</a></li>
+                    <li role="none"><a href="equipos.html" role="menuitem">Equipos</a></li>
+                    <li role="none"><a href="perfil.html" role="menuitem">Perfil</a></li>
+                </ul>
+
+                <!-- Simulador de Rol / Sesion -->
+                <div class="simulador-sesion" title="Simulador de Perfil / Rol para pruebas en EP1">
+                    <label for="selector-usuario-simulado" aria-label="Perfil de prueba activo">Rol:</label>
+                    <select id="selector-usuario-simulado">
+                        <!-- Llenado por app.js -->
+                    </select>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="contenido-principal">
+        <section class="seccion-pagina">
+            <div class="contenedor">
+
+                <div class="encabezado-seccion">
+                    <div>
+                        <h1>Gestion de Escuadras</h1>
+                        <p>Crea tu equipo, administra el plantel competitivo y preparate para los torneos oficiales.</p>
+                    </div>
+                </div>
+
+                <!-- Formulario de Creacion de Equipo -->
+                <div class="formulario-caja" style="margin-bottom: 3rem;">
+                    <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 0.75rem;">
+                        <h2 style="font-size: 1.5rem; color: #FFFFFF;">Registrar Nueva Escuadra</h2>
+                        <p style="font-size: 0.9rem; color: var(--color-texto-secundario);">Configura el nombre unico, disciplina y los jugadores del plantel.</p>
+                    </div>
+
+                    <div id="alerta-equipo-global" class="alerta" style="display: none;" role="alert"></div>
+
+                    <form id="formulario-crear-equipo" novalidate>
+                        
+                        <!-- 1. Nombre del Equipo -->
+                        <div id="grupo-equipo-nombre" class="campo-formulario">
+                            <label for="equipo-nombre">
+                                Nombre del Equipo: <span class="requerido">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="equipo-nombre" 
+                                name="nombre" 
+                                placeholder="Ej: Dragon Slayers eSports" 
+                                required 
+                                autocomplete="organization"
+                                aria-describedby="ayuda-nombre-equipo"
+                            >
+                            <p id="ayuda-nombre-equipo" class="texto-ayuda">Debe ser unico y tener al menos 3 caracteres.</p>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 2. Juego Principal -->
+                        <div id="grupo-equipo-juego" class="campo-formulario">
+                            <label for="equipo-juego">
+                                Juego Principal / Disciplina: <span class="requerido">*</span>
+                            </label>
+                            <select id="equipo-juego" name="juegoId" required>
+                                <!-- Inyectado por equipos.js -->
+                            </select>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 3. Seleccion del Capitan -->
+                        <div id="grupo-equipo-capitan" class="campo-formulario">
+                            <label for="equipo-capitan">
+                                Capitan del Equipo: <span class="requerido">*</span>
+                            </label>
+                            <select id="equipo-capitan" name="capitanId" required aria-describedby="ayuda-capitan">
+                                <!-- Inyectado por equipos.js -->
+                            </select>
+                            <p id="ayuda-capitan" class="texto-ayuda">El capitan es responsable de las inscripciones y comunicaciones de la escuadra.</p>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 4. Bloque Dinamico: Agregar Integrantes -->
+                        <div style="background: var(--color-superficie-elevada); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.25rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <h3 style="font-size: 1.1rem; color: var(--color-acento);">Integrantes del Plantel</h3>
+                                <span id="contador-miembros-formulario" style="font-size: 0.85rem; color: var(--color-texto-secundario);">(0 miembros)</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 2fr 1.5fr auto; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem;">
+                                <div>
+                                    <label for="miembro-usuario-select" style="font-size: 0.8rem; color: var(--color-texto-muted);">Jugador:</label>
+                                    <select id="miembro-usuario-select" style="background: var(--color-fondo); color: var(--color-texto); border: 1px solid var(--color-borde); padding: 0.5rem; border-radius: var(--radio-borde-sm); width: 100%;">
+                                        <!-- Inyectado por JS -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="miembro-rol-input" style="font-size: 0.8rem; color: var(--color-texto-muted);">Rol / Posicion:</label>
+                                    <input type="text" id="miembro-rol-input" placeholder="Ej: Mid, Top, Duelista, Suplente" style="background: var(--color-fondo); color: var(--color-texto); border: 1px solid var(--color-borde); padding: 0.5rem; border-radius: var(--radio-borde-sm); width: 100%;">
+                                </div>
+                                <div style="margin-top: 1.25rem;">
+                                    <button type="button" id="btn-agregar-miembro" class="boton boton-acento boton-sm" style="height: 38px;">
+                                        Anadir
+                                    </button>
+                                </div>
+                            </div>
+                            <span id="error-agregar-miembro" style="color: var(--color-error); font-size: 0.8rem; display: none; margin-bottom: 0.5rem;"></span>
+
+                            <!-- Lista de Miembros Agregados -->
+                            <ul id="lista-miembros-creacion" style="list-style: none; padding: 0;">
+                                <!-- Renderizado por equipos.js -->
+                            </ul>
+                        </div>
+
+                        <!-- Boton Submit -->
+                        <div>
+                            <button type="submit" id="btn-submit-crear-equipo" class="boton boton-primario boton-completo">
+                                Registrar Escuadra
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+                <!-- Seccion de Escuadras Registradas -->
+                <div class="encabezado-seccion">
+                    <div>
+                        <h2>Escuadras Registradas</h2>
+                        <p>Directorio de equipos habilitados para competir.</p>
+                    </div>
+                </div>
+
+                <div id="grilla-equipos-registrados" class="grilla-tarjetas" aria-live="polite">
+                    <!-- Tarjetas de equipos inyectadas dinamicamente -->
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Informativo -->
+    <footer class="pie-pagina-principal" role="contentinfo">
+        <div class="contenedor">
+            <div class="pie-contenido">
+                <div class="pie-columna">
+                    <h4>eSports Arena</h4>
+                    <p style="font-size: 0.9rem;">Organizacion y control de planteles deportivos con trazabilidad de jugadores.</p>
+                </div>
+                <div class="pie-columna">
+                    <h4>Navegacion</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="torneos.html">Catalogo de Torneos</a></li>
+                        <li><a href="inscripcion.html">Inscripcion</a></li>
+                        <li><a href="equipos.html">Gestion de Equipos</a></li>
+                        <li><a href="perfil.html">Perfil de Jugador</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>Transferencias</h4>
+                    <ul>
+                        <li><a href="#fichajes">Ventana de Fichajes</a></li>
+                        <li><a href="#prestamos">Prestamos de Jugadores</a></li>
+                        <li><a href="#capitanes">Guia para Capitanes</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>EP1 - DSY1104</h4>
+                    <p style="font-size: 0.85rem; color: var(--color-texto-muted);">Desarrollo FullStack II - Manipulacion del DOM y validacion de entidades.</p>
+                </div>
+            </div>
+            <div class="pie-derechos">
+                <p>&copy; 2026 eSports Arena Manager. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/equipos.js"></script>
+</body>
+</html>

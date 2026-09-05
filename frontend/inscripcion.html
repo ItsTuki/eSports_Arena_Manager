@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Inscripcion oficial a torneos eSports. Formulario con validaciones en cliente y verificacion de elegibilidad.">
+    <title>eSports Arena Manager | Inscripcion a Torneo</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Encabezado Principal de Navegacion -->
+    <header class="cabecera-principal" role="banner">
+        <div class="contenedor">
+            <nav class="barra-nav" aria-label="Navegacion principal">
+                <a href="index.html" class="marca-logo" aria-label="Inicio eSports Arena Manager">
+                    <span>eSports<span class="acento">Arena</span></span>
+                </a>
+
+                <ul class="menu-navegacion" role="menubar">
+                    <li role="none"><a href="index.html" role="menuitem">Inicio</a></li>
+                    <li role="none"><a href="torneos.html" role="menuitem">Torneos</a></li>
+                    <li role="none"><a href="inscripcion.html" role="menuitem">Inscripcion</a></li>
+                    <li role="none"><a href="equipos.html" role="menuitem">Equipos</a></li>
+                    <li role="none"><a href="perfil.html" role="menuitem">Perfil</a></li>
+                </ul>
+
+                <!-- Simulador de Rol / Sesion -->
+                <div class="simulador-sesion" title="Simulador de Perfil / Rol para pruebas en EP1">
+                    <label for="selector-usuario-simulado" aria-label="Perfil de prueba activo">Rol:</label>
+                    <select id="selector-usuario-simulado">
+                        <!-- Llenado por app.js -->
+                    </select>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="contenido-principal">
+        <section class="seccion-pagina">
+            <div class="contenedor">
+                
+                <div class="formulario-caja">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <span class="badge badge-abierto" style="margin-bottom: 0.5rem;">Registro Oficial</span>
+                        <h1 style="font-size: 2rem; color: #FFFFFF;">Inscripcion a Torneo</h1>
+                        <p style="color: var(--color-texto-secundario); font-size: 0.95rem;">
+                            Registra tu escuadra o cupo individual. El sistema valida plazos, cupos disponibles, integrantes minimos y sanciones disciplinarias.
+                        </p>
+                    </div>
+
+                    <!-- Alerta de Validacion Global (Error o Exito) -->
+                    <div id="alerta-validacion-global" class="alerta" style="display: none;" role="alert">
+                        <!-- Mensajes inyectados dinamicamente -->
+                    </div>
+
+                    <!-- Resumen de Requisitos del Torneo Seleccionado -->
+                    <div id="caja-resumen-torneo" style="display: none; background: var(--color-fondo); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.25rem; margin-bottom: 2rem;">
+                        <h3 style="color: var(--color-acento); font-size: 1.1rem; margin-bottom: 0.5rem;">
+                            Resumen del Torneo Seleccionado
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; font-size: 0.9rem;">
+                            <div><strong>Torneo:</strong> <span id="resumen-nombre-torneo">--</span></div>
+                            <div><strong>Modalidad:</strong> <span id="resumen-juego-modalidad">--</span></div>
+                            <div><strong>Tipo Participante:</strong> <span id="resumen-tipo-exigido">--</span></div>
+                            <div><strong>Cupos:</strong> <span id="resumen-cupos-info">--</span></div>
+                            <div style="grid-column: 1 / -1;"><strong>Limite de Inscripcion:</strong> <span id="resumen-cierre-info">--</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario Funcional Principal -->
+                    <form id="formulario-inscripcion" novalidate>
+                        
+                        <!-- 1. Selector de Torneo -->
+                        <div id="grupo-campo-torneo" class="campo-formulario">
+                            <label for="insc-torneo">
+                                Torneo a Inscribirse: <span class="requerido" aria-hidden="true">*</span>
+                            </label>
+                            <select id="insc-torneo" name="torneoId" required aria-describedby="ayuda-torneo">
+                                <!-- Opciones inyectadas por inscripcion.js -->
+                            </select>
+                            <p id="ayuda-torneo" class="texto-ayuda">Selecciona la competicion en la que deseas participar.</p>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 2. Tipo de Participante -->
+                        <div id="grupo-campo-tipo" class="campo-formulario">
+                            <label for="insc-tipo-participante">
+                                Tipo de Participante: <span class="requerido" aria-hidden="true">*</span>
+                            </label>
+                            <select id="insc-tipo-participante" name="tipoParticipante" required>
+                                <option value="EQUIPO">Escuadra / Equipo Competitivo</option>
+                                <option value="INDIVIDUAL">Participante Individual (1v1)</option>
+                            </select>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 3. Seleccion de Equipo o Jugador -->
+                        <div id="grupo-campo-participante" class="campo-formulario">
+                            <label id="label-participante" for="insc-participante">
+                                Selecciona tu Equipo: <span class="requerido" aria-hidden="true">*</span>
+                            </label>
+                            <select id="insc-participante" name="participanteId" required aria-describedby="ayuda-participante">
+                                <!-- Inyectado dinamicamente -->
+                            </select>
+                            <p id="ayuda-participante" class="texto-ayuda">Se listan las escuadras activas en el sistema.</p>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 4. Correo de Contacto del Capitan / Jugador -->
+                        <div id="grupo-campo-email" class="campo-formulario">
+                            <label for="insc-email">
+                                Correo de Contacto Oficial: <span class="requerido" aria-hidden="true">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                id="insc-email" 
+                                name="email" 
+                                placeholder="ejemplo.capitan@arenaesports.cl" 
+                                autocomplete="email" 
+                                required 
+                                aria-describedby="ayuda-email"
+                            >
+                            <p id="ayuda-email" class="texto-ayuda">Recibiras los enlaces de salas personalizadas y codigos de partida.</p>
+                            <span class="mensaje-error" role="alert"></span>
+                        </div>
+
+                        <!-- 5. Discord Tag / Canal de Voz -->
+                        <div id="grupo-campo-discord" class="campo-formulario">
+                            <label for="insc-discord">
+                                Usuario de Discord o Tag de Comunicacion:
+                            </label>
+                            <input 
+                                type="text" 
+                                id="insc-discord" 
+                                name="discord" 
+                                placeholder="Capitan#1234 o nombre_usuario" 
+                                autocomplete="username"
+                            >
+                            <p class="texto-ayuda">Util para coordinar con los arbitros antes de la partida.</p>
+                        </div>
+
+                        <!-- 6. Aceptacion de Terminos y Fair Play -->
+                        <div id="grupo-campo-terminos" class="campo-formulario" style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                            <input 
+                                type="checkbox" 
+                                id="insc-terminos" 
+                                name="terminos" 
+                                style="width: 18px; height: 18px; margin-top: 0.2rem; cursor: pointer;"
+                                required
+                            >
+                            <div>
+                                <label for="insc-terminos" style="cursor: pointer; margin-bottom: 0;">
+                                    Acepto el Codigo de Conducta, Politica Anticheat y Reglamento Oficial del Torneo. <span class="requerido">*</span>
+                                </label>
+                                <span class="mensaje-error" role="alert"></span>
+                            </div>
+                        </div>
+
+                        <!-- Boton Enviar -->
+                        <div style="margin-top: 2rem;">
+                            <button type="submit" id="btn-submit-inscripcion" class="boton boton-primario boton-completo">
+                                Confirmar y Enviar Inscripcion
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Informativo -->
+    <footer class="pie-pagina-principal" role="contentinfo">
+        <div class="contenedor">
+            <div class="pie-contenido">
+                <div class="pie-columna">
+                    <h4>eSports Arena</h4>
+                    <p style="font-size: 0.9rem;">Sistemas de gestion competitiva para torneos universitarios y semiprofesionales.</p>
+                </div>
+                <div class="pie-columna">
+                    <h4>Navegacion</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="torneos.html">Catalogo de Torneos</a></li>
+                        <li><a href="inscripcion.html">Inscripcion</a></li>
+                        <li><a href="equipos.html">Gestion de Equipos</a></li>
+                        <li><a href="perfil.html">Perfil de Jugador</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>Preguntas Frecuentes</h4>
+                    <ul>
+                        <li><a href="#como-inscribirse">Como inscribo a mi equipo</a></li>
+                        <li><a href="#sanciones-info">Sanciones disciplinarias</a></li>
+                        <li><a href="#horarios">Publicacion de llaves</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>EP1 - DSY1104</h4>
+                    <p style="font-size: 0.85rem; color: var(--color-texto-muted);">Validacion en el cliente con JavaScript puro e interfaces accesibles.</p>
+                </div>
+            </div>
+            <div class="pie-derechos">
+                <p>&copy; 2026 eSports Arena Manager. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/inscripcion.js"></script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perfil de jugador eSports. Estadisticas competitivas, historial de torneos, sanciones y datos de cuenta.">
+    <title>eSports Arena Manager | Perfil de Jugador</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Encabezado Principal de Navegacion -->
+    <header class="cabecera-principal" role="banner">
+        <div class="contenedor">
+            <nav class="barra-nav" aria-label="Navegacion principal">
+                <a href="index.html" class="marca-logo" aria-label="Inicio eSports Arena Manager">
+                    <span>eSports<span class="acento">Arena</span></span>
+                </a>
+
+                <ul class="menu-navegacion" role="menubar">
+                    <li role="none"><a href="index.html" role="menuitem">Inicio</a></li>
+                    <li role="none"><a href="torneos.html" role="menuitem">Torneos</a></li>
+                    <li role="none"><a href="inscripcion.html" role="menuitem">Inscripcion</a></li>
+                    <li role="none"><a href="equipos.html" role="menuitem">Equipos</a></li>
+                    <li role="none"><a href="perfil.html" role="menuitem">Perfil</a></li>
+                </ul>
+
+                <!-- Simulador de Rol / Sesion -->
+                <div class="simulador-sesion" title="Simulador de Perfil / Rol para pruebas en EP1">
+                    <label for="selector-usuario-simulado" aria-label="Perfil de prueba activo">Rol:</label>
+                    <select id="selector-usuario-simulado">
+                        <!-- Llenado por app.js -->
+                    </select>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="contenido-principal">
+        <section class="seccion-pagina">
+            <div class="contenedor">
+                
+                <!-- Encabezado de Perfil / Tarjeta de Identidad -->
+                <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde-lg); padding: 2rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <img id="perfil-avatar" src="" alt="Avatar del jugador" style="width: 90px; height: 90px; border-radius: var(--radio-pill); border: 3px solid var(--color-primario); object-fit: cover;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                                <h1 id="perfil-apodo-header" style="font-size: 1.8rem; color: #FFFFFF;">ShadowStriker</h1>
+                                <span id="perfil-rol-badge" class="badge badge-abierto">JUGADOR</span>
+                            </div>
+                            <p id="perfil-nombre-header" style="color: var(--color-texto-secundario); font-size: 1rem;">Matias Silva</p>
+                            <div style="font-size: 0.85rem; color: var(--color-acento); margin-top: 0.25rem;">
+                                Rango Competitivo: <strong id="perfil-rango">Diamante I</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadisticas Rapidas -->
+                    <div style="display: flex; gap: 1rem; background: var(--color-fondo); padding: 1rem 1.5rem; border-radius: var(--radio-borde); border: 1px solid var(--color-borde);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--color-texto-muted); text-transform: uppercase;">Victorias</div>
+                            <div id="stat-victorias" style="font-size: 1.4rem; font-weight: bold; color: var(--color-acento);">0</div>
+                        </div>
+                        <div style="width: 1px; background: var(--color-borde);"></div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--color-texto-muted); text-transform: uppercase;">Derrotas</div>
+                            <div id="stat-derrotas" style="font-size: 1.4rem; font-weight: bold; color: var(--color-error);">0</div>
+                        </div>
+                        <div style="width: 1px; background: var(--color-borde);"></div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--color-texto-muted); text-transform: uppercase;">Winrate</div>
+                            <div id="stat-winrate" style="font-size: 1.4rem; font-weight: bold; color: var(--color-primario);">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid de Contenido: Formulario de Edicion & Ficha Competitiva -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                    
+                    <!-- Columna Izquierda: Formulario de Edicion de Datos -->
+                    <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                        <h2 style="font-size: 1.3rem; color: #FFFFFF; margin-bottom: 1rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 0.5rem;">
+                            Editar Ficha Personal
+                        </h2>
+                        
+                        <div id="feedback-perfil" style="display: none; margin-bottom: 1rem;"></div>
+
+                        <form id="formulario-editar-perfil" novalidate>
+                            <!-- Apodo (sin espacios, largo 3-20) -->
+                            <div id="grupo-perfil-apodo" class="campo-formulario">
+                                <label for="input-perfil-apodo">
+                                    Apodo Competitivo: <span class="requerido">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="input-perfil-apodo" 
+                                    name="apodo" 
+                                    required 
+                                    autocomplete="nickname"
+                                    aria-describedby="ayuda-apodo"
+                                >
+                                <p id="ayuda-apodo" class="texto-ayuda">Obligatorio, sin espacios en blanco y de 3 a 20 caracteres.</p>
+                                <span class="mensaje-error" role="alert"></span>
+                            </div>
+
+                            <!-- Nombre Completo -->
+                            <div id="grupo-perfil-nombre" class="campo-formulario">
+                                <label for="input-perfil-nombre">
+                                    Nombre Completo: <span class="requerido">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="input-perfil-nombre" 
+                                    name="nombreCompleto" 
+                                    required 
+                                    autocomplete="name"
+                                >
+                                <span class="mensaje-error" role="alert"></span>
+                            </div>
+
+                            <!-- Correo Electronico -->
+                            <div id="grupo-perfil-email" class="campo-formulario">
+                                <label for="input-perfil-email">
+                                    Correo Electronico: <span class="requerido">*</span>
+                                </label>
+                                <input 
+                                    type="email" 
+                                    id="input-perfil-email" 
+                                    name="email" 
+                                    required 
+                                    autocomplete="email"
+                                >
+                                <span class="mensaje-error" role="alert"></span>
+                            </div>
+
+                            <button type="submit" class="boton boton-primario boton-completo">
+                                Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Columna Derecha: Equipos, Historial y Sanciones -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        
+                        <!-- Bloque de Equipos -->
+                        <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                            <h3 style="font-size: 1.15rem; color: var(--color-acento); margin-bottom: 0.75rem;">
+                                Mis Equipos
+                            </h3>
+                            <ul id="lista-equipos-jugador" style="list-style: none; padding: 0;">
+                                <!-- Inyectado por JS -->
+                            </ul>
+                        </div>
+
+                        <!-- Bloque de Historial de Torneos -->
+                        <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                            <h3 style="font-size: 1.15rem; color: #FFFFFF; margin-bottom: 0.75rem;">
+                                Historial de Torneos
+                            </h3>
+                            <ul id="lista-historial-torneos" style="list-style: none; padding: 0;">
+                                <!-- Inyectado por JS -->
+                            </ul>
+                        </div>
+
+                        <!-- Bloque de Sanciones Disciplinarias -->
+                        <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                            <h3 style="font-size: 1.15rem; color: #FFFFFF; margin-bottom: 0.75rem;">
+                                Estado Disciplinario
+                            </h3>
+                            <div id="lista-sanciones-jugador">
+                                <!-- Inyectado por JS -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Informativo -->
+    <footer class="pie-pagina-principal" role="contentinfo">
+        <div class="contenedor">
+            <div class="pie-contenido">
+                <div class="pie-columna">
+                    <h4>eSports Arena</h4>
+                    <p style="font-size: 0.9rem;">Historial competitivo y trazabilidad integral de torneos para deportes electronicos.</p>
+                </div>
+                <div class="pie-columna">
+                    <h4>Navegacion</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="torneos.html">Catalogo de Torneos</a></li>
+                        <li><a href="inscripcion.html">Inscripcion</a></li>
+                        <li><a href="equipos.html">Gestion de Equipos</a></li>
+                        <li><a href="perfil.html">Perfil de Jugador</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>Privacidad</h4>
+                    <ul>
+                        <li><a href="#privacidad">Politica de Privacidad</a></li>
+                        <li><a href="#terminos">Terminos de Servicio</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>EP1 - DSY1104</h4>
+                    <p style="font-size: 0.85rem; color: var(--color-texto-muted);">Desarrollo FullStack II - Vista de Perfil y Ficha de Participante.</p>
+                </div>
+            </div>
+            <div class="pie-derechos">
+                <p>&copy; 2026 eSports Arena Manager. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/perfil.js"></script>
+</body>
+</html>

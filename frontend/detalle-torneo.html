@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalles, partidas, llaves por ronda, lista de participantes y ranking del torneo eSports.">
+    <title>eSports Arena Manager | Detalle del Torneo</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Encabezado Principal de Navegacion -->
+    <header class="cabecera-principal" role="banner">
+        <div class="contenedor">
+            <nav class="barra-nav" aria-label="Navegacion principal">
+                <a href="index.html" class="marca-logo" aria-label="Inicio eSports Arena Manager">
+                    <span>eSports<span class="acento">Arena</span></span>
+                </a>
+
+                <ul class="menu-navegacion" role="menubar">
+                    <li role="none"><a href="index.html" role="menuitem">Inicio</a></li>
+                    <li role="none"><a href="torneos.html" role="menuitem">Torneos</a></li>
+                    <li role="none"><a href="inscripcion.html" role="menuitem">Inscripcion</a></li>
+                    <li role="none"><a href="equipos.html" role="menuitem">Equipos</a></li>
+                    <li role="none"><a href="perfil.html" role="menuitem">Perfil</a></li>
+                </ul>
+
+                <!-- Simulador de Rol / Sesion -->
+                <div class="simulador-sesion" title="Simulador de Perfil / Rol para pruebas en EP1">
+                    <label for="selector-usuario-simulado" aria-label="Perfil de prueba activo">Rol:</label>
+                    <select id="selector-usuario-simulado">
+                        <!-- Llenado por app.js -->
+                    </select>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="contenido-principal">
+        <!-- Selector rapido superior de torneo -->
+        <section style="background-color: var(--color-superficie); border-bottom: 1px solid var(--color-borde); padding: 0.75rem 0;">
+            <div class="contenedor" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <label for="selector-torneo-detalle" style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Seleccionar Torneo:</label>
+                    <select id="selector-torneo-detalle" style="background: var(--color-fondo); color: var(--color-texto); border: 1px solid var(--color-borde); padding: 0.4rem 0.8rem; border-radius: var(--radio-borde-sm);">
+                        <!-- Llenado por detalle-torneo.js -->
+                    </select>
+                </div>
+                <a href="torneos.html" class="boton boton-secundario boton-sm">&larr; Volver al catalogo</a>
+            </div>
+        </section>
+
+        <!-- Cabecera del Torneo y Banner -->
+        <section class="seccion-pagina" style="padding-top: 2rem;">
+            <div class="contenedor">
+                <div style="background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde-lg); overflow: hidden; margin-bottom: 2rem;">
+                    <div style="position: relative; height: 260px; background-color: #000;">
+                        <img id="detalle-banner" src="" alt="Banner del torneo" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+                        <div id="detalle-estado-badge" style="position: absolute; top: 1.25rem; right: 1.25rem;">
+                            <!-- Badge inyectado -->
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 1.75rem;">
+                        <h1 id="detalle-titulo" style="font-size: 2.2rem; color: #FFFFFF; margin-bottom: 0.75rem;">Cargando Torneo...</h1>
+                        <p id="detalle-descripcion" style="font-size: 1.05rem; color: var(--color-texto-secundario); margin-bottom: 1.5rem;"></p>
+                        
+                        <!-- Grid de Metadatos Clave -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; background: var(--color-fondo); padding: 1.25rem; border-radius: var(--radio-borde); border: 1px solid var(--color-borde); margin-bottom: 1.5rem;">
+                            <div>
+                                <span style="font-size: 0.8rem; color: var(--color-texto-muted); text-transform: uppercase;">Disciplina:</span>
+                                <div id="detalle-juego" style="font-weight: 700; color: var(--color-acento);">---</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.8rem; color: var(--color-texto-muted); text-transform: uppercase;">Periodo del Torneo:</span>
+                                <div id="detalle-fechas" style="font-weight: 700;">---</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.8rem; color: var(--color-texto-muted); text-transform: uppercase;">Cierre de Inscripciones:</span>
+                                <div id="detalle-cierre" style="font-weight: 700;">---</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.8rem; color: var(--color-texto-muted); text-transform: uppercase;">Juez / Organizador:</span>
+                                <div id="detalle-organizador" style="font-weight: 700;">---</div>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Cupos -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div style="flex-grow: 1; max-width: 500px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+                                    <span>Estado de Cupos:</span>
+                                    <span id="detalle-cupos-texto">--</span>
+                                </div>
+                                <div style="width: 100%; height: 10px; background: var(--color-fondo); border-radius: var(--radio-pill); overflow: hidden; border: 1px solid var(--color-borde);">
+                                    <div id="barra-cupos-progreso" style="height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <a id="btn-ir-inscripcion" href="inscripcion.html" class="boton boton-primario">Inscribirse en este Torneo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloques en 2 Columnas: Requisitos & Participantes -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 2.5rem;">
+                    <!-- Requisitos de Participacion -->
+                    <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                        <h3 style="color: #FFFFFF; font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 0.5rem;">
+                            Requisitos de Elegibilidad
+                        </h3>
+                        <ul id="detalle-requisitos" style="list-style: none; padding: 0;">
+                            <!-- Inyectado por JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Lista de Participantes Inscritos -->
+                    <div style="background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-borde); padding: 1.5rem;">
+                        <h3 style="color: #FFFFFF; font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                            <span>Participantes Inscritos</span>
+                            <span id="detalle-contador-inscritos" style="color: var(--color-acento);"></span>
+                        </h3>
+                        <ul id="detalle-lista-inscritos" style="list-style: none; padding: 0; max-height: 250px; overflow-y: auto;">
+                            <!-- Inyectado por JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Seccion: Llaves y Partidas por Ronda -->
+                <section class="seccion-pagina" style="padding-top: 0;" aria-labelledby="titulo-partidas">
+                    <div class="encabezado-seccion">
+                        <div>
+                            <h2 id="titulo-partidas">Llaves y Calendario de Partidas</h2>
+                            <p>Cronograma oficial de emparejamientos y resultados por ronda.</p>
+                        </div>
+                    </div>
+
+                    <!-- Selector de Ronda -->
+                    <div id="pestanas-rondas-partidas" class="pestanas-ronda" role="tablist" aria-label="Rondas del torneo">
+                        <!-- Botones de ronda inyectados dinamicamente -->
+                    </div>
+
+                    <!-- Lista de Partidas de la Ronda -->
+                    <div id="contenedor-lista-partidas" aria-live="polite">
+                        <!-- Tarjetas de partida inyectadas -->
+                    </div>
+                </section>
+
+                <!-- Seccion: Tabla de Posiciones (Ranking) -->
+                <section class="seccion-pagina" style="padding-top: 1rem;" aria-labelledby="titulo-tabla">
+                    <div class="encabezado-seccion">
+                        <div>
+                            <h2 id="titulo-tabla">Tabla de Posiciones</h2>
+                            <p>Clasificacion calculada por puntos y diferencia en partidas validadas.</p>
+                        </div>
+                    </div>
+
+                    <div class="contenedor-tabla">
+                        <table class="tabla-competitiva" aria-label="Tabla de posiciones del torneo">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Pos</th>
+                                    <th scope="col">Participante</th>
+                                    <th scope="col">PJ</th>
+                                    <th scope="col">PG</th>
+                                    <th scope="col">PP</th>
+                                    <th scope="col">Dif. Pts</th>
+                                    <th scope="col">Puntos Totales</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpo-tabla-ranking">
+                                <!-- Filas inyectadas por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Seccion: Premios por Posicion -->
+                <section class="seccion-pagina" style="padding-top: 0;" aria-labelledby="titulo-premios">
+                    <div class="encabezado-seccion">
+                        <div>
+                            <h2 id="titulo-premios">Bolsa de Premios</h2>
+                            <p>Recompensas asignadas segun la posicion alcanzada en la tabla final.</p>
+                        </div>
+                    </div>
+                    <div id="contenedor-premios">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </section>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Informativo -->
+    <footer class="pie-pagina-principal" role="contentinfo">
+        <div class="contenedor">
+            <div class="pie-contenido">
+                <div class="pie-columna">
+                    <h4>eSports Arena</h4>
+                    <p style="font-size: 0.9rem;">Gestion de torneos, cuadros de eliminatorias y arbitraje deportivo.</p>
+                </div>
+                <div class="pie-columna">
+                    <h4>Navegacion</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="torneos.html">Catálogo de Torneos</a></li>
+                        <li><a href="inscripcion.html">Inscripcion</a></li>
+                        <li><a href="equipos.html">Gestion de Equipos</a></li>
+                        <li><a href="perfil.html">Perfil de Jugador</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>Asistencia</h4>
+                    <ul>
+                        <li><a href="mailto:soporte@arenaesports.cl">Soporte Tecnico</a></li>
+                        <li><a href="#apelaciones">Comite de Arbitraje</a></li>
+                        <li><a href="#reglamento">Reglamento General</a></li>
+                    </ul>
+                </div>
+                <div class="pie-columna">
+                    <h4>EP1 - DSY1104</h4>
+                    <p style="font-size: 0.85rem; color: var(--color-texto-muted);">Desarrollo FullStack II - Arquitectura Web Vanilla sin dependencias.</p>
+                </div>
+            </div>
+            <div class="pie-derechos">
+                <p>&copy; 2026 eSports Arena Manager. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/detalle-torneo.js"></script>
+</body>
+</html>
